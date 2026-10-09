@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://easy-to-3d.local/schemas/1.0/capabilities",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tested_at",
+    "platform",
+    "backends",
+    "session_capabilities"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "tested_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backends": {
+      "type": "array"
+    },
+    "session_capabilities": {
+      "type": "object",
+      "required": [
+        "vision",
+        "execution",
+        "image_generation"
+      ],
+      "properties": {
+        "vision": {
+          "enum": [
+            "pass",
+            "fail",
+            "unknown"
+          ]
+        },
+        "execution": {
+          "enum": [
+            "pass",
+            "fail",
+            "unknown"
+          ]
+        },
+        "image_generation": {
+          "enum": [
+            "pass",
+            "fail",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://easy-to-3d.local/schemas/1.0/view",
+  "type": "object",
+  "required": [
+    "state_version",
+    "projection",
+    "position_project",
+    "target_project",
+    "up",
+    "aspect",
+    "near",
+    "far",
+    "hidden_objects",
+    "clipping_planes",
+    "display_mode"
+  ],
+  "properties": {
+    "state_version": {
+      "const": "1.0"
+    },
+    "projection": {
+      "enum": [
+        "orthographic",
+        "perspective"
+      ]
+    },
+    "position_project": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "target_project": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "up": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "aspect": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "near": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "far": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "orthographic_height": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "fov_degrees": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 179
+    },
+    "hidden_objects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "clipping_planes": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "display_mode": {
+      "enum": [
+        "solid",
+        "wireframe"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "projection": {
+            "const": "orthographic"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "orthographic_height"
+        ]
+      },
+      "else": {
+        "required": [
+          "fov_degrees"
+        ]
+      }
+    }
+  ]
+}

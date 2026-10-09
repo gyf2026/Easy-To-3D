@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://easy-to-3d.local/schemas/1.0/batch",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "model_version_id",
+    "preview_hash",
+    "annotation_ids",
+    "submitted_at",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preview_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "annotation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "submitted_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "submitted",
+        "processing",
+        "completed",
+        "failed"
+      ]
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

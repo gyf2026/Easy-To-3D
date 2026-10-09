@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "easy-to-3d"
+version = "0.1.0a1"
+description = "Local, versioned structural design and 3D review workbench"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "viewer/vendor/THREE-LICENSE"]
+
+[project.scripts]
+easy-to-3d = "easy_to_3d.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "core"}
+
+[tool.setuptools.package-data]
+easy_to_3d = ["web/**/*", "schemas/*.json"]
+
+[project.optional-dependencies]
+drawings = ["cairosvg>=2.7,<3"]
+dev = ["jsonschema>=4.20,<5", "PyYAML>=6,<7", "build>=1,<2"]

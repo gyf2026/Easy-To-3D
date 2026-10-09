@@ -1,0 +1,20 @@
+recursive-include viewer *.js *.css *.html THREE-LICENSE
+recursive-include schemas *.json
+recursive-include skills *.md
+recursive-include backend-examples *.py
+recursive-include docs *.md
+recursive-include integrations *.md
+recursive-include tools *.py *.mjs
+include README.md CONTRIBUTING.md LICENSE LICENSE-STATUS.md
+
+recursive-include .github *.yml
+
+prune tests
+prune benchmarks
+prune docs/evidence
+prune backend-examples/build123d
+exclude docs/status.md docs/RELEASE-CHECKLIST.md docs/windows-agent-validation.md
+exclude tools/browser_fixture.py tools/run_browser_tests.py tools/run_backend_scenarios.py
+exclude tools/measure_viewer.py tools/measure_viewer.mjs tools/platform_verify.py
+exclude tools/build_platform_bundle.py tools/fetch_validation_wheels.py
+global-exclude __pycache__ *.py[cod] .DS_Store *.log

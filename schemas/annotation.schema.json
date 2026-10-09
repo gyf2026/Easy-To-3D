@@ -1,0 +1,294 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://easy-to-3d.local/schemas/1.0/annotation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "model_version_id",
+    "preview_hash",
+    "anchor",
+    "view",
+    "text",
+    "status",
+    "revision"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preview_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "anchor": {
+      "type": "object",
+      "required": [
+        "position_project",
+        "normal_project",
+        "units"
+      ],
+      "properties": {
+        "position_project": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "normal_project": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "units": {
+          "const": "mm"
+        },
+        "object_hint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "triangle_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "required": [
+        "state_version",
+        "projection",
+        "position_project",
+        "target_project",
+        "up",
+        "aspect",
+        "near",
+        "far",
+        "hidden_objects",
+        "clipping_planes",
+        "display_mode"
+      ],
+      "properties": {
+        "state_version": {
+          "const": "1.0"
+        },
+        "projection": {
+          "enum": [
+            "orthographic",
+            "perspective"
+          ]
+        },
+        "position_project": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "target_project": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "up": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "aspect": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "near": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "far": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "orthographic_height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fov_degrees": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 179
+        },
+        "hidden_objects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "clipping_planes": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "display_mode": {
+          "enum": [
+            "solid",
+            "wireframe"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "projection": {
+                "const": "orthographic"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "orthographic_height"
+            ]
+          },
+          "else": {
+            "required": [
+              "fov_degrees"
+            ]
+          }
+        }
+      ]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    },
+    "status": {
+      "enum": [
+        "open",
+        "acknowledged",
+        "addressed",
+        "accepted",
+        "needs_clarification",
+        "unresolved",
+        "deleted"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "review_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "creator": {
+      "enum": [
+        "user",
+        "agent"
+      ]
+    },
+    "markup": {
+      "type": "object",
+      "required": [
+        "type",
+        "style",
+        "units",
+        "points_project",
+        "object_hints"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "line",
+            "ruler",
+            "freehand"
+          ]
+        },
+        "style": {
+          "enum": [
+            "solid",
+            "dashed"
+          ]
+        },
+        "units": {
+          "const": "mm"
+        },
+        "points_project": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4096,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "object_hints": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4096,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "line",
+                  "ruler"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "points_project": {
+                "maxItems": 2
+              },
+              "object_hints": {
+                "maxItems": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

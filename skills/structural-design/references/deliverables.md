@@ -1,0 +1,10 @@
+# Drawings and print
+
+Drawings derive from the same native version. Front is looking along +Y, top along -Z, right along -X, all with explicit orthographic direction and scale. A perspective orbit screenshot is not an engineering three-view drawing. Use actual native hidden-line output when available; mesh edge projections remain clearly labelled illustrative.
+
+China invention/utility model and design patent configurations are independent. Record rule source and verification date; recheck official requirements before a public release or actual application. Distinguish automatically checked numbering/references from manual line quality and legal review. No compliance guarantee.
+
+`export --project <path> --version <id> --profile print --output <delivery-dir>` creates binary STL in mm, dimensions, mesh checks, unresolved process items and hash manifest. STL unit is communicated in delivery notes. The core has no built-in slicing engine or printer control. When the user requests machine-specific files, the Agent first confirms printer/firmware/nozzle/material/layer height and an approved profile, then operates an external slicer and preserves configuration hashes, input/output hashes, logs and preview checks. Never infer another printer’s settings or start printing without explicit authorization. Use profile drawings to copy only published SVG/PDF drawings, with manifest bound to the exact model version.
+
+
+Prefer Agent conversation for saving and delivery. Run `delivery-guide --project <path> --version <id>` for exact version-bound argv and missing printer information. Finish active browser feedback first. Use `backup --project <path> --output <new ZIP outside project>` and `backup-verify --file <ZIP>` for a portable whole-project snapshot. Published native models and scripts are already persisted; never overwrite them. Exports require new/empty delivery directories, stage and verify all files before committing, and report mesh failure separately from successful file generation.
