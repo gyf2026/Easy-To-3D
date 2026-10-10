@@ -17,7 +17,7 @@ def make_server(project,port=0):
         def output(self,status,value,kind='application/json',attachment=False):
             data=value if isinstance(value,bytes) else json.dumps(value,ensure_ascii=False,allow_nan=False).encode()
             self.send_response(status); self.send_header('Content-Type',kind); self.send_header('Content-Length',str(len(data))); self.send_header('Cache-Control','no-store'); self.send_header('X-Content-Type-Options','nosniff'); self.send_header('Referrer-Policy','no-referrer')
-            policy="sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:" if attachment else "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'"
+            policy="sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:" if attachment else "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' data: blob:; img-src 'self' data: blob:; frame-ancestors 'none'"
             self.send_header('Content-Security-Policy',policy)
             if attachment:self.send_header('Content-Disposition','attachment')
             self.end_headers(); self.wfile.write(data)

@@ -46,6 +46,7 @@ runs/
 /backend-examples/build123d/
 /tools/browser_fixture.py
 /tools/run_browser_tests.py
+/tools/run_external_model_tests.py
 /tools/run_backend_scenarios.py
 /tools/measure_viewer.py
 /tools/measure_viewer.mjs
@@ -68,3 +69,8 @@ test_*.py
 *_test.py
 *.test.*
 *.spec.*
+
+# Local Agent capability evidence and probe caches
+/capability-cache*.json
+/session-capabilities*.json
+/doctor-report*.json

@@ -7,6 +7,10 @@ description: Build and revise mechanical parts, enclosures and small static asse
 
 Use the user's Agent client for reasoning and freely authored modeling scripts. Easy-To-3D stores requirements, versions, previews and structured review; it does not prescribe geometry operations or interpret feedback through keyword rules.
 
+For existing meshes or a client's external 3D generator, read [external models](references/external-models.md). Preserve appearance and the original file, discover actual editing capabilities, and import returned results as children of the reviewed version.
+
+Read [user workflow](references/user-workflow.md) to discover current client capabilities, select a task-appropriate route, and keep setup/save/print operations in the Agent conversation.
+
 ## Start or resume
 
 Run `easy-to-3d --json project inspect --project <path>` for an existing project. Read its current requirements, selected version, pending batches and incomplete workspaces. Project ID is authoritative; names can collide. For a new project use `project init --parent <user-design-directory> --name <object> --feature <key-feature>`.
@@ -17,9 +21,9 @@ Gather critical dimensions and structural intent together. Store unresolved assu
 
 ## Build and deliver
 
-Create a workspace, write any appropriate FreeCAD or Blender script, preserve its inputs, and run through `easy-to-3d run --workspace <path> --timeout <seconds> -- <argv>`. Examples illustrate export contracts; they are not a closed library. Read [backend workflow](references/backends.md) for the workspace artifacts contract.
+Select a verified client generation/edit route or a task-appropriate local backend. External results follow the import and handoff contract. For local modeling, create a workspace, write any appropriate FreeCAD or Blender script, preserve its inputs, and run through `easy-to-3d run --workspace <path> --timeout <seconds> -- <argv>`. Examples illustrate export contracts; they are not a closed library. Read [backend workflow](references/backends.md) for the workspace artifacts contract.
 
-First produce a white model and consistent orthographic views for layout confirmation. Record the exact version the user confirms. Then refine and check the relevant hard constraints. Use `check --workspace <path> --profile structure`; add print or patent only when selected. A missing print configuration never blocks structural review. Native validity and requirement checks need actual measurement evidence; unknown is not pass.
+For precision structures, first produce a white model and consistent orthographic views for layout confirmation. Organic appearance tasks may start with a textured candidate. Record the exact version the user confirms. Then refine and check the relevant hard constraints. Use `check --workspace <path> --profile structure`; add print or patent only when selected. A missing print configuration never blocks structural review. Native validity and requirement checks need actual measurement evidence; unknown is not pass.
 
 A candidate may contain explicit unresolved checks. Failed or timed-out execution cannot be published. Publish through `version publish --project <path> --workspace <workspace-id> --summary <change>`, then open `view --project <path>`. Never edit published models, scripts or requirements snapshots in place.
 

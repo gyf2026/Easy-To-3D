@@ -5,7 +5,7 @@ from pathlib import Path
 from .contracts import require, transform
 from .storage import atomic, digest
 from .mesh import read_glb, read_stl
-from .glb import write_glb, PREVIEW_TO_PROJECT
+from .glb import write_glb, rewrite_json, PREVIEW_TO_PROJECT
 from .checks import mesh_facts, check
 from .execution import run
 
@@ -18,20 +18,26 @@ def source_matrix(units, up_axis):
 
 def rebuild_mesh(root, source_name, units, up_axis):
     root=Path(root);source=root/'source'/source_name;matrix=source_matrix(units,up_axis)
-    triangles=read_glb(source)['triangles'] if source.suffix.lower()=='.glb' else read_stl(source)
+    glb=read_glb(source,normalize_object_ids=True) if source.suffix.lower()=='.glb' else None
+    triangles=glb['triangles'] if glb else read_stl(source)
     triangles=[{'object_id':t['object_id'],'vertices':[transform(matrix,p) for p in t['vertices']]} for t in triangles]
     facts=mesh_facts(triangles);groups={}
     for triangle in triangles:
-        group=groups.setdefault(triangle['object_id'],{'id':triangle['object_id'],'vertices':[],'faces':[]})
-        start=len(group['vertices']);group['vertices'].extend(triangle['vertices']);group['faces'].append([start,start+1,start+2])
-    write_glb(root/'preview/model.glb',list(groups.values()))
-    atomic(root/'artifacts.json',{'schema_version':'1.0','native':'source/'+source_name,'preview':'preview/model.glb','script':'scripts/import_mesh.py','units':'mm','source_to_project':matrix,'preview_to_project':PREVIEW_TO_PROJECT,'bounding_box_project':facts['bounding_box_project'],'objects':[{'id':key} for key in groups],'reproducibility':'source mesh + explicit conversion script','capabilities':{'viewable':True,'annotatable':True,'editable':'mesh only; original parametric history unknown','rebuildable':'preview conversion only; original design history unavailable'}})
+        if glb:groups[triangle['object_id']]=None
+        else:
+            group=groups.setdefault(triangle['object_id'],{'id':triangle['object_id'],'vertices':[],'faces':[]})
+            start=len(group['vertices']);group['vertices'].extend(triangle['vertices']);group['faces'].append([start,start+1,start+2])
+    if glb:rewrite_json(source,root/'preview/model.glb',glb['document'])
+    else:write_glb(root/'preview/model.glb',list(groups.values()))
+    atomic(root/'artifacts.json',{'schema_version':'1.0','native':'source/'+source_name,'preview':'preview/model.glb','script':'scripts/import_mesh.py','units':'mm','source_to_project':matrix,'preview_to_project':matrix if glb else PREVIEW_TO_PROJECT,'bounding_box_project':facts['bounding_box_project'],'objects':[{'id':key} for key in groups],'reproducibility':'source mesh + explicit conversion script','capabilities':{'viewable':True,'annotatable':True,'appearance_preserved':bool(glb),'editable':'mesh only; original parametric history unknown','rebuildable':'preview conversion only; original design history unavailable'}})
     return facts
 
 def import_mesh(project, source, units, up_axis, variant=None, parent=None):
     source=Path(source).resolve();require(source.is_file(),'Source model missing')
     require(source.suffix.lower() in ('.glb','.stl'),'Direct import supports static GLB and binary STL; native CAD/Blender imports require an explicit backend script')
     source_matrix(units,up_axis)
+    # Reject unsupported assets before creating a candidate workspace.
+    read_glb(source) if source.suffix.lower()=='.glb' else read_stl(source)
     work=project.workspace_create(variant,parent);root=Path(work['path']);name='imported'+source.suffix.lower();shutil.copy2(source,root/'source'/name)
     atomic(root/'import.json',{'schema_version':'1.0','original_name':source.name,'source_hash':digest(source),'source_units':units,'source_up_axis':up_axis,'scripts_executed_from_source':False,'history_recovered':False})
     script="from pathlib import Path\nimport sys\nsys.path.insert(0,str(Path.cwd()/'dependencies'))\nfrom easy_to_3d.importing import rebuild_mesh\nrebuild_mesh(Path.cwd(),"+repr(name)+","+repr(units)+","+repr(up_axis)+")\n"

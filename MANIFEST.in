@@ -15,6 +15,7 @@ prune docs/evidence
 prune backend-examples/build123d
 exclude docs/status.md docs/RELEASE-CHECKLIST.md docs/windows-agent-validation.md
 exclude tools/browser_fixture.py tools/run_browser_tests.py tools/run_backend_scenarios.py
+exclude tools/run_external_model_tests.py
 exclude tools/measure_viewer.py tools/measure_viewer.mjs tools/platform_verify.py
 exclude tools/build_platform_bundle.py tools/fetch_validation_wheels.py
 global-exclude __pycache__ *.py[cod] .DS_Store *.log

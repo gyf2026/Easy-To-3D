@@ -8,6 +8,19 @@ from pathlib import Path
 
 PREVIEW_TO_PROJECT=[1000,0,0,0, 0,0,-1000,0, 0,1000,0,0, 0,0,0,1]
 
+def rewrite_json(source, target, document):
+    """Preserve GLB binary chunks, UVs, textures and materials; replace only JSON."""
+    data=Path(source).read_bytes();chunks=[];offset=12
+    while offset<len(data):
+        size,kind=struct.unpack_from('<II',data,offset);offset+=8
+        payload=data[offset:offset+size];offset+=size
+        if kind==0x4E4F534A:
+            payload=json.dumps(document,ensure_ascii=False,separators=(',',':')).encode('utf-8')
+            payload+=b' '*((-len(payload))%4)
+        chunks.append(struct.pack('<II',len(payload),kind)+payload)
+    body=b''.join(chunks)
+    Path(target).write_bytes(struct.pack('<4sII',b'glTF',2,12+len(body))+body)
+
 def write_glb(path,objects):
     blob=bytearray(); views=[]; accessors=[]; meshes=[]; nodes=[]
     for obj in objects:

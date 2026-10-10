@@ -7,7 +7,12 @@ import struct
 from pathlib import Path
 from .contracts import require, transform, IDENTITY
 
-def read_glb(path):
+MATERIAL_EXTENSIONS={'KHR_materials_unlit','KHR_materials_clearcoat','KHR_materials_ior',
+    'KHR_materials_specular','KHR_materials_transmission','KHR_materials_volume',
+    'KHR_materials_sheen','KHR_materials_iridescence','KHR_materials_emissive_strength',
+    'KHR_materials_anisotropy','KHR_materials_dispersion','KHR_texture_transform'}
+
+def read_glb(path, normalize_object_ids=False):
     data=Path(path).read_bytes()
     require(len(data)>=20,'Truncated GLB')
     magic,version,length=struct.unpack_from('<4sII',data)
@@ -19,8 +24,16 @@ def read_glb(path):
         require(offset+size<=len(data),'Truncated chunk'); chunks[kind]=data[offset:offset+size]; offset+=size
     require(0x4E4F534A in chunks and 0x004E4942 in chunks,'GLB needs JSON and BIN chunks')
     doc=json.loads(chunks[0x4E4F534A]); binary=chunks[0x004E4942]
-    require(not doc.get('extensionsRequired'),'Required GLTF extensions unsupported for checking')
+    unsupported=set(doc.get('extensionsRequired',[]))-MATERIAL_EXTENSIONS
+    unsupported|=set(doc.get('extensionsUsed',[]))&{'KHR_draco_mesh_compression','EXT_meshopt_compression','KHR_mesh_quantization','KHR_texture_basisu','EXT_mesh_gpu_instancing'}
+    require(not unsupported,'Unsupported GLB extensions: '+', '.join(sorted(unsupported))+'; export an uncompressed static GLB with embedded images')
+    require(not doc.get('animations'),'Animated GLB unsupported; export a static pose with Blender')
     require(len(doc.get('buffers',[]))==1 and not doc['buffers'][0].get('uri'),'External GLB buffers unsupported')
+    for image in doc.get('images',[]):
+        require(not image.get('uri') or image['uri'].startswith('data:image/'),'External GLB images unsupported; embed textures before import')
+    if normalize_object_ids:
+        for index,node in enumerate(doc.get('nodes',[])):
+            if 'mesh' in node:node.setdefault('extras',{})['object_id']='import_node_'+str(index)
     def accessor(index):
         item=doc['accessors'][index]; require(not item.get('sparse'),'Sparse accessors unsupported')
         fmt={5126:'f',5125:'I',5123:'H',5121:'B'}.get(item['componentType']); require(fmt is not None,'Unsupported component type')

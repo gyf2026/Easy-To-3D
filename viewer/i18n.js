@@ -1,4 +1,6 @@
 const messages={
+  "提交修改": ["Submit feedback", "変更意見を送信", "Envoyer les commentaires"],
+  "已提交": ["Submitted", "送信済み", "Envoyé"],
   "加载项目…": [
     "Loading project…",
     "プロジェクトを読み込み中…",

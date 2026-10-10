@@ -1,6 +1,6 @@
 # macOS 与 Windows 核心适配
 
-当前目标：macOS 与 Windows 10/11，Python 3.10 及以上。macOS 有本机运行证据；Windows 10 AMD64 / Python3.12.10 实机已完成97项核心测试与浏览器检查，Blender4.5.10原生工作流通过。FreeCAD1.1.4中文脚本路径失败，修正后的完整工作流须在该机复测；Windows11、其他架构与Python版本未推定兼容。
+当前目标：macOS 与 Windows 10/11，Python 3.10 及以上。macOS 有本机运行证据；Windows 10 AMD64 / Python3.13.14修正版114项核心全部通过，无跳过，含4项Windows专用测试；Chrome153的34项检查、FreeCAD1.1.4中文路径与Blender5.2.1 LTS原生工作流已通过。本轮完整验证入口已通过；Windows11、其他架构与Python版本未推定兼容。
 
 - 协议、文件清单、绘图索引与 HTTP 资源路径统一使用 `/` 相对路径；本机文件访问由 pathlib 转换。项目可以搬迁，保存原有 ID 与哈希。
 - 原子 JSON、发布、整项目备份和交付目录不依赖 POSIX 命令。文件锁分别用 fcntl 与 Windows msvcrt，跨进程冲突有真实行为测试。
@@ -9,8 +9,10 @@
 - doctor 支持 PATH、用户提供的可执行路径和 Windows ProgramFiles/LOCALAPPDATA 中的常见 FreeCAD/Blender 安装位置。实际探测仍分别记录找到、启动、脚本/导出结果。
 - 浏览器依赖可配置；测试默认使用所安装 Playwright 的浏览器，不再内置开发者的 macOS 路径。使用者无需 Node/npm。
 
-`.github/workflows/core-platforms.yml` 对macOS/Windows × Python3.10/3.14进行构建、安装与CLI启动检查。测试源码按维护者要求仅在本地保留，不纳入Git；因此该公开工作流不执行完整功能测试，也不能作为后端兼容性通过证据。尚未有远程运行记录。
+`.github/workflows/core-platforms.yml` 对macOS/Windows × Python3.10/3.14进行构建、安装与CLI启动检查。测试源码按维护者要求仅在本地保留，不纳入Git；因此该公开工作流不执行完整功能测试，也不能作为后端兼容性通过证据。首版远程构建暴露了 Python 3.10 runner 预装 setuptools 过旧的问题；工作流现显式升级并满足 pyproject.toml 的 setuptools>=77.0.3 构建要求。各次执行结果以 GitHub Actions 记录为准。
 
-Windows FreeCAD1.1.4实测不能直接接收含中文的脚本argv路径，ASCII脚本与中文工作目录的对照正常。产品的受控run针对FreeCADCmd生成每次执行独立的ASCII相对入口，通过嵌入Python读取原脚本；保留中文项目名、工作目录、原脚本、相邻模块导入和参数，并记录原始/实际argv、入口及脚本哈希。不改写历史脚本，也不自动重试已执行的脚本。该修正尚待Windows实机复测；保持中文标定项目，不以改成英文项目规避验收。
+Windows FreeCAD1.1.4实测不能直接接收含中文的脚本argv路径，ASCII脚本与中文工作目录的对照正常。产品的受控run针对FreeCADCmd生成每次执行独立的ASCII相对入口，通过嵌入Python读取原脚本；保留中文项目名、工作目录、原脚本、相邻模块导入和参数，并记录原始/实际argv、入口及脚本哈希。不改写历史脚本，也不自动重试已执行的脚本。该入口修正已在Windows10/FreeCAD1.1.4中文标定项目实际复测通过，日志记录ASCII入口及原中文脚本路径；不以改成英文项目规避验收。
 
 路径按argv传递，避免shell拼接；后端对Unicode的实际能力需分别验证。Windows项目可放在短路径以减少外部软件长路径限制。切片器与Cairo的Windows集成尚未实测；可选PDF缺失时保留SVG，补齐依赖遵循经用户同意后Agent安装流程。
+
+2026-10-10报告的官方300秒核心阶段超时；补充运行完成112项但仍有1项队列等待错误。验证工具现提供 `--core-timeout`，Windows默认1800秒，其他主机300秒；这是测试套件时限，不修改产品建模或用户任务的超时。测试等待采用有限总预算，仍必须获得一次成功和一次版本冲突并核对进程退出。修正后的完整套件已在上述Windows实机使用2400秒时限复测通过，核心实际约1378秒；不改变上轮失败的原始记录。环境删除延迟原因仅作为报告分析，不归因到未核验的安全软件。

@@ -8,7 +8,8 @@ from .storage import ContractError, Conflict, read, atomic, confined, digest, no
 
 def parser():
     p=argparse.ArgumentParser(prog='easy-to-3d'); p.add_argument('--json',action='store_true'); sub=p.add_subparsers(dest='command',required=True)
-    doctor=sub.add_parser('doctor'); doctor.add_argument('--backend',choices=['freecad','blender','all'],default='all'); doctor.add_argument('--executable'); doctor.add_argument('--probe',action='store_true')
+    doctor=sub.add_parser('doctor'); doctor.add_argument('--backend',choices=['freecad','blender','all'],default='all'); doctor.add_argument('--executable'); doctor.add_argument('--probe',action='store_true');doctor.add_argument('--cache');doctor.add_argument('--refresh',action='store_true');doctor.add_argument('--session-report')
+    workflow=sub.add_parser('workflow-guide');workflow.add_argument('--task',choices=['organic','precision','mesh-edit','texture','save','print'],required=True);workflow.add_argument('--report')
     project=sub.add_parser('project'); ps=project.add_subparsers(dest='action',required=True)
     init=ps.add_parser('init'); init.add_argument('--parent',required=True); init.add_argument('--name',required=True); init.add_argument('--feature',default='结构设计')
     inspect=ps.add_parser('inspect'); inspect.add_argument('--project',required=True)
@@ -22,7 +23,7 @@ def parser():
     recover=sub.add_parser('recover'); recover.add_argument('--workspace',required=True)
     check=sub.add_parser('check'); check.add_argument('--workspace',required=True); check.add_argument('--profile',action='append',choices=['structure','print','patent'])
     version=sub.add_parser('version'); version.add_argument('action',choices=['publish','verify']); version.add_argument('--project',required=True); version.add_argument('--workspace'); version.add_argument('--version'); version.add_argument('--summary',default='候选版本')
-    review=sub.add_parser('review'); review.add_argument('action',choices=['list','restore','claim','respond']); review.add_argument('--project',required=True); review.add_argument('--version'); review.add_argument('--annotation'); review.add_argument('--batch'); review.add_argument('--text'); review.add_argument('--result-version'); review.add_argument('--status',default='addressed'); review.add_argument('--submitted',action='store_true')
+    review=sub.add_parser('review'); review.add_argument('action',choices=['list','restore','claim','respond','handoff']); review.add_argument('--project',required=True); review.add_argument('--version'); review.add_argument('--annotation'); review.add_argument('--batch'); review.add_argument('--text'); review.add_argument('--result-version'); review.add_argument('--status',default='addressed'); review.add_argument('--submitted',action='store_true')
     view=sub.add_parser('view'); view.add_argument('--project',required=True); view.add_argument('--version'); view.add_argument('--port',type=int,default=0)
     draw=sub.add_parser('drawings');draw.add_argument('action',choices=['convert-pdf','check']);draw.add_argument('--workspace');draw.add_argument('--svg');draw.add_argument('--output')
     export=sub.add_parser('export'); export.add_argument('--project',required=True); export.add_argument('--version',required=True); export.add_argument('--profile',choices=['print','drawings'],required=True); export.add_argument('--output',required=True)
@@ -32,6 +33,9 @@ def parser():
     return p
 
 def dispatch(a):
+    if a.command=='workflow-guide':
+        from .workflow import guide
+        return guide(a.task,read(a.report) if a.report else None)
     if a.command=='backup-verify':
         from .backup import verify_backup
         return verify_backup(a.file)
@@ -43,7 +47,7 @@ def dispatch(a):
         return cancel(a.workspace,a.run_id)
     if a.command=='doctor':
         from .doctor import doctor
-        return doctor(a.backend,a.executable,a.probe)
+        return doctor(a.backend,a.executable,a.probe,a.cache,a.refresh,read(a.session_report) if a.session_report else None)
     if a.command=='run':
         from .execution import run
         command=a.argv[1:] if a.argv and a.argv[0]=='--' else a.argv
@@ -70,6 +74,9 @@ def dispatch(a):
         if a.action=='publish': return project.publish(a.workspace,a.summary)
         return project.verify(a.version)
     if a.command=='review':
+        if a.action=='handoff':
+            from .handoff import review_handoff
+            return review_handoff(project,a.version,a.batch)
         if a.action=='list':
             records=[{'version_id':v['id'],**project.review(v['id'])} for v in project.versions() if not a.version or v['id']==a.version]
             if a.submitted:

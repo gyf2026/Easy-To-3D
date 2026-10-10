@@ -32,7 +32,7 @@ def discover(backend,explicit=None):
         if candidate.is_file(): return str(candidate)
     return None
 
-def doctor(backend='all',explicit=None,probe=False):
+def _probe_doctor(backend='all',explicit=None,probe=False):
     results=[]
     for name in ['freecad','blender'] if backend=='all' else [backend]:
         path=discover(name,explicit); result={'backend':name,'executable':path,'found':bool(path),'version':None,'script_export':'unknown','download':DOWNLOADS[name]}
@@ -60,8 +60,41 @@ def doctor(backend='all',explicit=None,probe=False):
                 'configure_command':['easy-to-3d','--json','doctor','--backend',name,'--executable','<可执行程序完整路径>','--probe'],
                 'download':DOWNLOADS[name],
                 'installation_workflow':'未安装时，由 Agent 提出官方版本、系统架构、安装位置及权限需求；经用户同意后执行下载与安装，核验官方提供的校验信息，配置路径并重新运行实际探测。',
-                'recommended_configuration':{'python':'3.10 或以上（核心运行环境）','backend':'官方稳定版；优先复现项目已验证版本，其他版本安装后需通过实际探测','validated_version':'FreeCAD 1.1.4' if name=='freecad' else 'Blender 4.5.3 LTS','architecture':'与操作系统及处理器架构匹配；其他平台尚未实测'},
+                'recommended_configuration':{'python':'3.10 或以上（核心运行环境）','backend':'官方稳定版；优先复现项目已验证版本，其他版本安装后需通过实际探测','validated_version':'FreeCAD 1.1.4 (macOS/Windows中文路径流程实测)' if name=='freecad' else 'Blender 4.5.3 LTS (macOS); 4.5.10 / 5.2.1 LTS (Windows)' ,'architecture':'与操作系统及处理器架构匹配；macOS arm64和Windows AMD64有局部实测，其他架构待验证'},
                 'executable_hint':'选择实际可执行文件，不是安装目录、安装包或 .app 文件夹；macOS Blender 通常为 Blender.app/Contents/MacOS/Blender；FreeCAD 为 FreeCAD.app 内的 freecadcmd。Windows 选择对应 .exe；Linux 选择命令文件。',
                 'verification':'路径存在仅表示找到工具；必须分别通过启动和脚本/导出探测。缺少一个后端时可使用满足任务的另一个，不要求同时安装。'}
         results.append(result)
     return {'schema_version':'1.0','tested_at':now(),'platform':platform.platform(),'backends':results,'session_capabilities':{'vision':'unknown','execution':'unknown','image_generation':'unknown','reason':'Must be tested in host Agent session, cannot be inferred from model name or environment variable'},'compatibility':'Actual local probe only; other platforms unverified'}
+
+def doctor(backend='all',explicit=None,probe=False,cache=None,refresh=False,session=None):
+    """Optional local cache; client facts are always supplied for the current session."""
+    from datetime import datetime,timezone
+    from .storage import read,atomic
+    from .workflow import session_report
+    client=session_report(session)
+    paths={name:discover(name,explicit) for name in (['freecad','blender'] if backend=='all' else [backend])}
+    fingerprint={'platform':platform.platform(),'backend':backend,'explicit':str(explicit),'probe':probe,'tools':{}}
+    for name,path in paths.items():
+        try:
+            stat=Path(path).stat() if path else None
+            fingerprint['tools'][name]=[path,stat.st_size,stat.st_mtime_ns] if stat else [None]
+        except OSError:fingerprint['tools'][name]=[path,'unavailable']
+    report=None
+    if cache and not refresh:
+        try:
+            saved=read(cache);age=(datetime.now(timezone.utc)-datetime.fromisoformat(saved['tested_at'])).total_seconds()
+            if saved.get('cache_fingerprint')==fingerprint and 0<=age<=7*86400 and not any(x.get('launch')=='fail' or x.get('script_export')=='fail' for x in saved.get('backends',[])):
+                report=saved;report['cache_status']='reused'
+        except (OSError,ValueError,KeyError,TypeError,AttributeError):pass
+    if report is None:
+        report=_probe_doctor(backend,explicit,probe);report['cache_fingerprint']=fingerprint;report['cache_status']='fresh'
+        # Failures are not reused: fixing permissions or runtime dependencies must trigger a new probe.
+        if cache:
+            if any(x.get('launch')=='fail' or x.get('script_export')=='fail' for x in report['backends']):
+                Path(cache).unlink(missing_ok=True)
+            else:atomic(cache,report)
+    report['client_capabilities']=client
+    report['user_summary']={'available':[x['backend'] for x in report['backends'] if x['script_export']=='pass'],
+        'needs_probe':[x['backend'] for x in report['backends'] if x['found'] and x['script_export']=='unknown'],
+        'next_step':'Use the task-appropriate available route; probe or install only what this task needs. Never require every backend.'}
+    return report

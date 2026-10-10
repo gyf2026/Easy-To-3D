@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install build setuptools wheel
+      - run: python -m pip install --upgrade build "setuptools>=77.0.3" wheel
       - run: python -m build --no-isolation
       - shell: bash
         run: python -m pip install dist/*.whl

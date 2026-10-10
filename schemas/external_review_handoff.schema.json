@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://easy-to-3d.local/schemas/1.0/external_review_handoff",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "project_id",
+    "source_version_id",
+    "variant_id",
+    "batch",
+    "source_model",
+    "preview",
+    "coordinates",
+    "requirements",
+    "annotations",
+    "capabilities",
+    "workflow",
+    "instructions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "external-3d-review-handoff"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_version_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "batch": {
+      "$ref": "batch.schema.json"
+    },
+    "source_model": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "units",
+        "up_axis"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "units": {
+          "enum": [
+            "mm",
+            "cm",
+            "m",
+            "unknown"
+          ]
+        },
+        "up_axis": {
+          "enum": [
+            "Y",
+            "Z",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "preview": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "coordinates": {
+      "type": "object",
+      "required": [
+        "project_units",
+        "project_up_axis",
+        "matrix_layout",
+        "source_to_project",
+        "project_to_source"
+      ],
+      "properties": {
+        "project_units": {
+          "const": "mm"
+        },
+        "project_up_axis": {
+          "const": "Z"
+        },
+        "matrix_layout": {
+          "const": "row-major"
+        },
+        "source_to_project": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 16,
+          "maxItems": 16
+        },
+        "project_to_source": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 16,
+          "maxItems": 16
+        }
+      }
+    },
+    "requirements": {
+      "$ref": "requirements.schema.json"
+    },
+    "annotations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "allOf": [
+          {
+            "$ref": "annotation.schema.json"
+          },
+          {
+            "type": "object",
+            "required": [
+              "number",
+              "source_anchor"
+            ],
+            "properties": {
+              "number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_anchor": {
+                "type": "object",
+                "required": [
+                  "position",
+                  "normal",
+                  "units",
+                  "up_axis"
+                ],
+                "properties": {
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "normal": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "units": {
+                    "enum": [
+                      "mm",
+                      "cm",
+                      "m",
+                      "unknown"
+                    ]
+                  },
+                  "up_axis": {
+                    "enum": [
+                      "Y",
+                      "Z",
+                      "unknown"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "capabilities": {
+      "type": "object"
+    },
+    "workflow": {
+      "type": "object"
+    },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

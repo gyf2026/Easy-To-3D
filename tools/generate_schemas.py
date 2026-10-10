@@ -18,6 +18,26 @@ batch={'type':'object','required':['schema_version','id','model_version_id','pre
 response={'type':'object','required':['schema_version','id','annotation_id','batch_id','source_version_id','result_version_id','text','status','created_at'],'properties':{'schema_version':{'const':'1.0'},'id':string,'annotation_id':string,'batch_id':string,'source_version_id':string,'result_version_id':{'type':['string','null']},'text':string,'status':{'enum':['addressed','needs_clarification','unresolved']},'created_at':string}}
 check_report={'type':'object','required':['schema_version','created_at','profiles','input_fingerprint','status','items'],'properties':{'schema_version':{'const':'1.0'},'created_at':string,'profiles':{'type':'array','items':{'enum':['structure','print','patent']}},'input_fingerprint':string,'status':{'enum':['pass','fail','unknown']},'items':{'type':'array','items':{'type':'object','required':['id','status'],'properties':{'id':string,'status':{'enum':['pass','fail','unknown','not_applicable']}}}}}}
 capabilities={'type':'object','required':['schema_version','tested_at','platform','backends','session_capabilities'],'properties':{'schema_version':{'const':'1.0'},'tested_at':string,'platform':string,'backends':{'type':'array'},'session_capabilities':{'type':'object','required':['vision','execution','image_generation'],'properties':{k:{'enum':['pass','fail','unknown']} for k in ['vision','execution','image_generation']}}}}
+annotation['properties']['markup']={'type': 'object',
+ 'required': ['type', 'style', 'units', 'points_project', 'object_hints'],
+ 'additionalProperties': False,
+ 'properties': {'type': {'enum': ['line', 'ruler', 'freehand']},
+                'style': {'enum': ['solid', 'dashed']},
+                'units': {'const': 'mm'},
+                'points_project': {'type': 'array',
+                                   'minItems': 2,
+                                   'maxItems': 4096,
+                                   'items': {'type': 'array',
+                                             'minItems': 3,
+                                             'maxItems': 3,
+                                             'items': {'type': 'number'}}},
+                'object_hints': {'type': 'array',
+                                 'minItems': 2,
+                                 'maxItems': 4096,
+                                 'items': {'type': 'string', 'minLength': 1}}},
+ 'allOf': [{'if': {'properties': {'type': {'enum': ['line', 'ruler']}}},
+            'then': {'properties': {'points_project': {'maxItems': 2}, 'object_hints': {'maxItems': 2}}}}]}
+external_review_handoff={'type':'object','required':['schema_version','kind','project_id','source_version_id','variant_id','batch','source_model','preview','coordinates','requirements','annotations','capabilities','workflow','instructions'],'properties':{'schema_version':{'const':'1.0'},'kind':{'const':'external-3d-review-handoff'},'project_id':string,'source_version_id':string,'variant_id':string,'batch':{'$ref':'batch.schema.json'},'source_model':{'type':'object','required':['path','sha256','units','up_axis'],'properties':{'path':string,'sha256':string,'units':{'enum':['mm','cm','m','unknown']},'up_axis':{'enum':['Y','Z','unknown']}}},'preview':{'type':'object','required':['path','sha256'],'properties':{'path':string,'sha256':string}},'coordinates':{'type':'object','required':['project_units','project_up_axis','matrix_layout','source_to_project','project_to_source'],'properties':{'project_units':{'const':'mm'},'project_up_axis':{'const':'Z'},'matrix_layout':{'const':'row-major'},'source_to_project':matrix,'project_to_source':matrix}},'requirements':{'$ref':'requirements.schema.json'},'annotations':{'type':'array','minItems':1,'items':{'allOf':[{'$ref':'annotation.schema.json'},{'type':'object','required':['number','source_anchor'],'properties':{'number':{'type':'integer','minimum':1},'source_anchor':{'type':'object','required':['position','normal','units','up_axis'],'properties':{'position':vector,'normal':vector,'units':{'enum':['mm','cm','m','unknown']},'up_axis':{'enum':['Y','Z','unknown']}}}}}]}},'capabilities':{'type':'object'},'workflow':{'type':'object'},'instructions':{'type':'array','items':string}}}
 for name,value in locals().copy().items():
-    if name in ('view','annotation','requirements','project','artifacts','variant','version','batch','response','check_report','capabilities'):
+    if name in ('view','annotation','requirements','project','artifacts','variant','version','batch','response','check_report','capabilities','external_review_handoff'):
         (root/(name+'.schema.json')).write_text(json.dumps({'$schema':'https://json-schema.org/draft/2020-12/schema','$id':'https://easy-to-3d.local/schemas/1.0/'+name,**value},ensure_ascii=False,indent=2)+'\n')
