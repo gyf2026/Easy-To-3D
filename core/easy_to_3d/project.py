@@ -14,7 +14,9 @@ class Project:
         c.require(self.data.get('coordinates')=={'units':'mm','handedness':'right','up_axis':'Z'},'Unknown project coordinate semantics')
 
     @classmethod
-    def init(cls, parent, name, feature='结构设计'):
+    def init(cls, parent, name, feature=None, language='zh'):
+        c.require(language in ('zh','en','ja','fr'),'Unsupported project language')
+        feature=feature or {'zh':'结构设计','en':'Structural design','ja':'構造設計','fr':'Conception structurelle'}[language]
         def clean(s):
             s=re.sub(r'[<>:"/\\|?*\x00-\x1f]','_',s).strip(' .')[:48] or 'project'
             return '_'+s if s.upper().split('.')[0] in {'CON','PRN','AUX','NUL',*(f'COM{i}' for i in range(1,10)),*(f'LPT{i}' for i in range(1,10))} else s
@@ -24,11 +26,12 @@ class Project:
         root.mkdir(parents=True,exist_ok=False)
         for folder in ('references','requirements/history','variants','workspace','.cache'):
             (root/folder).mkdir(parents=True)
-        atomic(root/'project.json',{'schema_version':'1.0','id':project_id,'name':name,'created_at':now(),'coordinates':{'units':'mm','handedness':'right','up_axis':'Z'},'variants':[],'active_version_id':None,'phase':'requirements','revision':0})
+        atomic(root/'project.json',{'schema_version':'1.0','id':project_id,'name':name,'language':language,'created_at':now(),'coordinates':{'units':'mm','handedness':'right','up_axis':'Z'},'variants':[],'active_version_id':None,'phase':'requirements','revision':0})
         atomic(root/'requirements/current.json',{'schema_version':'1.0','revision':0,'items':[]})
         atomic(root/'state.json',{'schema_version':'1.0','accepted_versions':[],'confirmations':[]})
-        (root/'项目说明.md').write_text('# '+name+'\n\n需求、假设与验收条件保存在 requirements/current.json。\n',encoding='utf-8')
-        project=cls(root); project.variant_create('默认方案')
+        notes={'zh':('项目说明.md','需求、假设与验收条件保存在 requirements/current.json。','默认方案'),'en':('Project notes.md','Requirements, assumptions and acceptance criteria are stored in requirements/current.json.','Default design'),'ja':('プロジェクト説明.md','要件、前提、検収条件は requirements/current.json に保存されます。','標準案'),'fr':('Notes du projet.md','Les exigences, hypothèses et critères de validation sont enregistrés dans requirements/current.json.','Conception par défaut')}[language]
+        (root/notes[0]).write_text('# '+name+'\n\n'+notes[1]+'\n',encoding='utf-8')
+        project=cls(root); project.variant_create(notes[2])
         return project
 
     def reload(self):

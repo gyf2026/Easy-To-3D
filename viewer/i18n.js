@@ -1,4 +1,5 @@
 const messages={
+  "滚轮缩放鼠标位置；右键拖动平移；双击表面添加点评": ["Scroll to zoom at the pointer; right-drag to pan; double-click a surface for feedback", "ポインター位置でスクロール拡大・縮小；右ドラッグで移動；表面をダブルクリックしてコメント", "Molette : zoom au pointeur ; glisser avec le bouton droit : déplacement ; double-clic sur une surface : commentaire"],
   "提交修改": ["Submit feedback", "変更意見を送信", "Envoyer les commentaires"],
   "已提交": ["Submitted", "送信済み", "Envoyé"],
   "加载项目…": [

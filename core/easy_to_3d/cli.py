@@ -11,7 +11,7 @@ def parser():
     doctor=sub.add_parser('doctor'); doctor.add_argument('--backend',choices=['freecad','blender','all'],default='all'); doctor.add_argument('--executable'); doctor.add_argument('--probe',action='store_true');doctor.add_argument('--cache');doctor.add_argument('--refresh',action='store_true');doctor.add_argument('--session-report')
     workflow=sub.add_parser('workflow-guide');workflow.add_argument('--task',choices=['organic','precision','mesh-edit','texture','save','print'],required=True);workflow.add_argument('--report')
     project=sub.add_parser('project'); ps=project.add_subparsers(dest='action',required=True)
-    init=ps.add_parser('init'); init.add_argument('--parent',required=True); init.add_argument('--name',required=True); init.add_argument('--feature',default='结构设计')
+    init=ps.add_parser('init'); init.add_argument('--parent',required=True); init.add_argument('--name',required=True); init.add_argument('--feature'); init.add_argument('--language',choices=['zh','en','ja','fr'],default='zh')
     inspect=ps.add_parser('inspect'); inspect.add_argument('--project',required=True)
     confirm=ps.add_parser('confirm'); confirm.add_argument('--project',required=True);confirm.add_argument('--version',required=True);confirm.add_argument('--kind',choices=['white_model','design','delivery'],required=True);confirm.add_argument('--note',required=True)
     req=sub.add_parser('requirements');req.add_argument('--project',required=True);req.add_argument('--file',required=True);req.add_argument('--revision',type=int,required=True);req.add_argument('--variant')
@@ -24,7 +24,7 @@ def parser():
     check=sub.add_parser('check'); check.add_argument('--workspace',required=True); check.add_argument('--profile',action='append',choices=['structure','print','patent'])
     version=sub.add_parser('version'); version.add_argument('action',choices=['publish','verify']); version.add_argument('--project',required=True); version.add_argument('--workspace'); version.add_argument('--version'); version.add_argument('--summary',default='候选版本')
     review=sub.add_parser('review'); review.add_argument('action',choices=['list','restore','claim','respond','handoff']); review.add_argument('--project',required=True); review.add_argument('--version'); review.add_argument('--annotation'); review.add_argument('--batch'); review.add_argument('--text'); review.add_argument('--result-version'); review.add_argument('--status',default='addressed'); review.add_argument('--submitted',action='store_true')
-    view=sub.add_parser('view'); view.add_argument('--project',required=True); view.add_argument('--version'); view.add_argument('--port',type=int,default=0)
+    view=sub.add_parser('view'); view.add_argument('--project',required=True); view.add_argument('--version'); view.add_argument('--port',type=int,default=0); view.add_argument('--language',choices=['zh','en','ja','fr'])
     draw=sub.add_parser('drawings');draw.add_argument('action',choices=['convert-pdf','check']);draw.add_argument('--workspace');draw.add_argument('--svg');draw.add_argument('--output')
     export=sub.add_parser('export'); export.add_argument('--project',required=True); export.add_argument('--version',required=True); export.add_argument('--profile',choices=['print','drawings'],required=True); export.add_argument('--output',required=True)
     snapshot=sub.add_parser('backup');snapshot.add_argument('--project',required=True);snapshot.add_argument('--output',required=True)
@@ -56,7 +56,7 @@ def dispatch(a):
         from .checks import check
         return check(a.workspace,a.profile or ['structure'])
     if a.command=='project' and a.action=='init':
-        project=Project.init(a.parent,a.name,a.feature); return project.inspect()
+        project=Project.init(a.parent,a.name,a.feature,a.language); return project.inspect()
     if a.command=='drawings':
         from .drawings import convert_pdf,check_drawings
         return convert_pdf(a.svg,a.output) if a.action=='convert-pdf' else check_drawings(a.workspace)
@@ -91,7 +91,7 @@ def dispatch(a):
     if a.command=='view':
         from .server import serve
         if a.version: project.version(a.version)
-        return serve(a.project,a.port,a.version)
+        return serve(a.project,a.port,a.version,a.language)
     if a.command=='backup':
         from .backup import backup
         return backup(project,a.output)

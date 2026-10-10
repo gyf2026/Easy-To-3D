@@ -79,6 +79,14 @@
     "revision": {
       "type": "integer",
       "minimum": 0
+    },
+    "language": {
+      "enum": [
+        "zh",
+        "en",
+        "ja",
+        "fr"
+      ]
     }
   }
 }

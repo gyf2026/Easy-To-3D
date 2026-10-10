@@ -34,3 +34,8 @@ Read [validation](references/validation.md) for revision limits and verification
 Read [review](references/review.md) when the user submits a review batch. Restore each annotation's original model version, explicit millimetre coordinates, camera and hidden parts. Do not use screenshots or triangle indices as cross-version identity. Create a child workspace from the reviewed version, preserve unrelated confirmed dimensions, publish a new version, and respond separately to every annotation with result version and evidence. Only the user accepts subjective feedback.
 
 If interrupted, failed, or changing chat, inspect the project again. Keep incomplete workspaces and execution logs. Report what is implemented, what actually passed, what is unknown, and the next concrete action; do not mark a model accepted based only on Agent confidence.
+
+
+Language and naming: use the language the user uses to communicate with the Agent (zh/en/ja/fr), unless the user requests otherwise. Pass `project init --language <code>` and use that language for `--name`, `--feature`, design summaries and human-facing generated/export filenames. Keep technical keys and fixed artifact-contract paths unchanged. Open `view --language <code>` for the current conversation, including existing projects; never rename published artifacts or existing project paths in place. Unsupported conversation languages fall back to Chinese and offer the four supported choices. The user can change the viewer language manually.
+
+Visible review numbers are consecutive among non-deleted annotations and may change after deletion. Use annotation IDs plus source version/batch IDs as authoritative references, never numbers alone.

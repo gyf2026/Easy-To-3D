@@ -29,7 +29,7 @@ def review_handoff(project, version_id, batch_id):
     artifact=version['artifacts'];mapping=artifact['source_to_project'];reverse=inverse(mapping)
     metadata=read(root/'import.json') if (root/'import.json').exists() else {}
     items=[]
-    for number,item in enumerate(review['annotations'],1):
+    for number,item in enumerate((x for x in review['annotations'] if x['status']!='deleted'),1):
         if item.get('review_batch_id')!=batch_id or item['status']=='deleted':continue
         value=copy.deepcopy(item);normal=value['anchor']['normal_project']
         source_normal=[sum(mapping[r*4+c]*normal[r] for r in range(3)) for c in range(3)]

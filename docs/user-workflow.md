@@ -66,3 +66,10 @@ Agent读取确切版本和批次的 `review handoff`，恢复视角和坐标。�
 “保存项目”使用完整项目备份和SHA校验；编集中仅存浏览器的草稿先完成编辑并自动保存。打印交付使用 `delivery-guide`，用户无需到查看器操作导出。
 
 当前核心直接导出打印STL。3MF等格式需实际转换工具验证，不能把规划格式写成已有支持。机器专用文件需打印机、固件、喷嘴、材料、层高及认可的切片配置；只询问尚缺字段。Agent探测切片器实际CLI和配置、执行切片、检查结果并保存日志及哈希。缺少工具按上述经同意安装流程处理，不启动打印，不将STL改名为G-code。
+
+查看导航：模型加载成功后底部结束“正在加载”并显示操作提示。滚轮按鼠标位置缩放，右键拖动平移；正交/透视切换、恢复点评视角和历史双画布均保留这些操作。“适应模型”恢复整个模型的构图，模型坐标原点不因导航改变。
+
+
+Language and naming: use the language the user uses to communicate with the Agent (zh/en/ja/fr), unless the user requests otherwise. Pass `project init --language <code>` and use that language for `--name`, `--feature`, design summaries and human-facing generated/export filenames. Keep technical keys and fixed artifact-contract paths unchanged. Open `view --language <code>` for the current conversation, including existing projects; never rename published artifacts or existing project paths in place. Unsupported conversation languages fall back to Chinese and offer the four supported choices. The user can change the viewer language manually.
+
+Visible review numbers are consecutive among non-deleted annotations and may change after deletion. Use annotation IDs plus source version/batch IDs as authoritative references, never numbers alone.

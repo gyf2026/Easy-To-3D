@@ -101,9 +101,11 @@ def make_server(project,port=0):
             except (ContractError,OSError,KeyError,TypeError,ValueError) as error: return self.output(400,{'error':str(error)})
     return ThreadingHTTPServer(('127.0.0.1',port),Handler)
 
-def serve(project,port=0,version=None):
+def serve(project,port=0,version=None,language=None):
     server=make_server(project,port)
-    print(json.dumps({'url':f'http://127.0.0.1:{server.server_port}'+('?version='+version if version else ''),'project':str(Path(project).resolve())}),flush=True)
+    from urllib.parse import urlencode
+    query=urlencode({k:v for k,v in {'version':version,'language':language}.items() if v})
+    print(json.dumps({'url':f'http://127.0.0.1:{server.server_port}'+('?'+query if query else ''),'project':str(Path(project).resolve())}),flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally: server.server_close()
