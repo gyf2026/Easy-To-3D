@@ -1,0 +1,27 @@
+name: Bug report / 问题反馈
+description: Report a reproducible problem without private models or credentials.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and expected behavior / 问题与预期
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps and minimal example / 复现步骤与最小示例
+      description: Use a shareable synthetic model. Do not upload private designs or secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境
+      description: OS, Python, project commit/version, browser, Agent client/model, FreeCAD or Blender version.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized error or screenshot / 脱敏错误或截图

@@ -1,21 +1,16 @@
 recursive-include viewer *.js *.css *.html THREE-LICENSE
 recursive-include schemas *.json
-recursive-include skills *.md
-recursive-include backend-examples *.py
-recursive-include docs *.md
+recursive-include skills/structural-design *.md
+recursive-include backend-examples/freecad *.py
+recursive-include backend-examples/blender *.py
 recursive-include integrations *.md
-recursive-include tools *.py *.mjs
-include README.md CONTRIBUTING.md LICENSE LICENSE-STATUS.md
-
+include tools/build_release.py tools/generate_schemas.py
+include README.md README.zh-CN.md CONTRIBUTING.md SECURITY.md AGENTS.md LICENSE LICENSE-STATUS.md
+include docs/decisions.md docs/platform-support.md docs/compatibility.md docs/external-models.md
+include docs/user-workflow.md docs/agent-delivery.md docs/quickstart.md docs/cli-workflow.zh-CN.md
+include docs/releases/v0.1.0a1.md docs/images/review-comparison.png
 recursive-include .github *.yml
-
 prune tests
 prune benchmarks
 prune docs/evidence
-prune backend-examples/build123d
-exclude docs/status.md docs/RELEASE-CHECKLIST.md docs/windows-agent-validation.md
-exclude tools/browser_fixture.py tools/run_browser_tests.py tools/run_backend_scenarios.py
-exclude tools/run_external_model_tests.py
-exclude tools/measure_viewer.py tools/measure_viewer.mjs tools/platform_verify.py
-exclude tools/build_platform_bundle.py tools/fetch_validation_wheels.py
 global-exclude __pycache__ *.py[cod] .DS_Store *.log

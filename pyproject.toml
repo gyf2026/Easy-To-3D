@@ -6,9 +6,14 @@ build-backend = "setuptools.build_meta"
 name = "easy-to-3d"
 version = "0.1.0a1"
 description = "Local, versioned structural design and 3D review workbench"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE", "viewer/vendor/THREE-LICENSE"]
+
+[project.urls]
+Repository = "https://github.com/gyf2026/Easy-To-3D"
+Issues = "https://github.com/gyf2026/Easy-To-3D/issues"
 
 [project.scripts]
 easy-to-3d = "easy_to_3d.cli:main"

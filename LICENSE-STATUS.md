@@ -1,5 +1,12 @@
-# 代码授权状态
+# License and bundled dependencies
 
-用户于 2026-10-08 确认新工程采用 Apache-2.0。许可原文见 LICENSE，发行包包含该文件。当前产品处于 Alpha 阶段；源码仓库与可安装发行包的发布状态分别判断，不把源码托管等同于稳定版发布。
+Easy-To-3D is distributed under [Apache-2.0](LICENSE).
 
-随查看器分发的 Three.js 0.180.0 按 MIT 授权，原文在 viewer/vendor/THREE-LICENSE。其余 FreeCAD、Blender 外部应用仅用于本机测试，不包含在发布包内。可选 CairoSVG 等由安装器从其独立发行渠道取得，遵循各自许可。
+| Component | Distribution | License |
+|---|---|---|
+| Easy-To-3D source and Skill | Included | Apache-2.0 |
+| Three.js 0.180.0 | Bundled with the viewer | MIT; see [original notice](viewer/vendor/THREE-LICENSE) |
+| FreeCAD and Blender | Installed separately; not bundled | Consult each application's distribution |
+| Optional CairoSVG and Python dependencies | Installed from their own distributions | Consult each dependency's license |
+
+Model files and assets supplied by users or external services are not automatically covered by the software license. Release packages retain the license texts for included code.

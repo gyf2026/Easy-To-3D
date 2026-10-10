@@ -1,7 +1,17 @@
-# 开发约定
+# Contributing
 
-本项目是独立实现，历史 EasyTo3D 只读。不将用户设计写入软件安装目录或代码仓库。模型自由脚本与稳定产物协议分开；不引入文本正则几何修改入口。
+Bug reports, reproducible examples, documentation improvements and focused pull requests are welcome. Please describe the user-visible problem, expected behavior and environment. Use synthetic or shareable models; remove private paths, credentials and personal designs.
 
-变更坐标、相机、发布或评审协议时添加行为回归，并同步 schemas 与决策记录。测试分为纯逻辑、真实 HTTP、浏览器、真实后端、Agent 场景。跳过必须说明原因，不能将合成夹具通过写成后端通过。
+## Development
 
-发布前运行本轮适用的确定性测试、干净包安装及支持矩阵实测。未知兼容性或检查写 unknown。代码许可证已确认为 Apache-2.0；公开发行仍须核对第三方许可清单。测试源码和过程证据按维护者要求留在本地，公开 CI 仅执行构建、安装和 CLI 检查；新增行为验证需保留本地证据，并更新对外支持范围。
+Use Python 3.10+ and install `python -m pip install '.[dev]'`. Build a fresh release candidate with `python tools/build_release.py --output <new-directory>`. The output directory must not already exist.
+
+Keep user projects outside the source checkout. Modeling scripts remain unrestricted; the core manages stable artifacts and review records. Changes to coordinates, cameras, publication or review protocols should update schemas and the design decisions. Requirements, source artifacts and published versions are immutable; revisions create child versions. Report execution, validation and user acceptance separately.
+
+## Validation scope
+
+Public CI builds packages, installs the wheel and starts the CLI on the configured platforms. The full functional suite and raw validation evidence are maintained separately and are not currently distributed. Contributors can provide a minimal reproduction and manual verification steps; maintainers run the relevant internal regressions before merging behavior changes. A green CI result is not complete functional validation.
+
+Do not mark an untested platform or client as supported. Distinguish synthetic fixtures from real backend tests and update [compatibility](docs/compatibility.md) with the scope of actual evidence. Document skipped or unknown checks.
+
+Code is licensed under Apache-2.0. Preserve third-party notices and submit only material you have the right to contribute.
