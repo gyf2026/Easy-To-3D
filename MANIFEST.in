@@ -16,3 +16,4 @@ prune docs/evidence
 global-exclude __pycache__ *.py[cod] .DS_Store *.log
 
 include docs/images/aerosense-feedback.png docs/images/aerosense-comparison.png docs/images/aerosense-bottom-feedback.png
+include docs/images/square-enclosure-comparison.png docs/images/square-enclosure-feedback.png

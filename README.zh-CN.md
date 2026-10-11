@@ -8,17 +8,14 @@
 
 **Alpha · Python 3.10+ · Apache-2.0**。机械结构优先 FreeCAD，网格流程可用 Blender；按需要单独安装。build123d 目前仅作实验评估，不是正式支持的产品后端。
 
-![AeroSense 原版与 Agent 修订版同视角对比](docs/images/aerosense-comparison.png)
-*真实 FreeCAD 概念模型与英文查看器：左侧原版，右侧修订版。本轮完成外露边缘圆滑处理、背面 USB 接口左右居中及底部通风槽新增；尚未验证制造适用性。*
+![方形壳体首版与按点评修改后的版本同视角对比](docs/images/square-enclosure-comparison.png)
+*中文查看器：左侧为所选的首版白模，右侧为按点评修改后的最新版。本版在底部四角增加 Ø2×0.5 圆柱脚垫，并对可见外棱边做侧倒圆（筒身 R2.0 / 顶盖 R1.5 / 内腔 R1.0 / 孔口 R0.5），配合面与台肩保持锐边。模型尺寸按照片比例估算，均为假定值，尚未实测。*
 
 <details>
 <summary>查看点评过程截图</summary>
 
-![在外壳边缘标记并提出圆滑处理意见](docs/images/aerosense-feedback.png)
-*直接标记位置并描述修改要求。*
-
-![在原版底面标记并要求增加通风槽](docs/images/aerosense-bottom-feedback.png)
-*这张图展示修改前的原版及底部开孔要求。提交点评后，将继续修改指令发回 Agent。*
+![在方形壳体上定位标记并填写修改意见](docs/images/square-enclosure-feedback.png)
+*在模型上标记位置并描述修改要求，每条点评保留编号、位置坐标和视角。提交点评后，将继续修改指令发回 Agent。*
 
 </details>
 

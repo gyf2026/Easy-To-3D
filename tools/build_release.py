@@ -21,6 +21,7 @@ DOCS = (
     'releases/v0.1.0a1.md', 'images/review-comparison.png',
     'images/aerosense-feedback.png', 'images/aerosense-comparison.png',
     'images/aerosense-bottom-feedback.png',
+    'images/square-enclosure-comparison.png', 'images/square-enclosure-feedback.png',
 )
 TREES = {
     'core/easy_to_3d': {'.py'}, 'viewer': {'.js', '.css', '.html'},
