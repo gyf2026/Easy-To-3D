@@ -8,8 +8,19 @@ A local workbench for mechanical design, 3D model review, drawing preparation an
 
 **Alpha · Python 3.10+ · Apache-2.0**. FreeCAD is the primary mechanical CAD path; Blender supports mesh workflows. These applications are installed separately. build123d is an experimental evaluation, not a supported product backend.
 
-![Actual viewer with annotations and synchronized revision comparison](docs/images/review-comparison.png)
-*Actual viewer UI using synthetic browser-test models to demonstrate annotations and comparison; this image is not evidence of an Agent-generated CAD revision.*
+![AeroSense before and after an Agent revision, compared from the same viewpoint](docs/images/aerosense-comparison.png)
+*Real FreeCAD concept model and English viewer: original on the left, revised on the right. This review cycle rounded the exterior edges, centered the rear USB port and added bottom vents. Manufacturing suitability has not been validated.*
+
+<details>
+<summary>See how the feedback was recorded</summary>
+
+![Marking an enclosure edge and requesting rounder, smoother edges](docs/images/aerosense-feedback.png)
+*Point to a location and describe the change.*
+
+![Requesting bottom ventilation on the original model](docs/images/aerosense-bottom-feedback.png)
+*The bottom-vent request shown here is on the original version, before modification. Submit feedback, then send the continuation instruction to your Agent.*
+
+</details>
 
 ## What you can do
 

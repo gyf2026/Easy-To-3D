@@ -8,8 +8,19 @@
 
 **Alpha · Python 3.10+ · Apache-2.0**。机械结构优先 FreeCAD，网格流程可用 Blender；按需要单独安装。build123d 目前仅作实验评估，不是正式支持的产品后端。
 
-![查看器编号点评和同视角版本对比](docs/images/review-comparison.png)
-*真实查看器界面，使用浏览器测试的合成模型展示交互；不作为 Agent 完成真实 CAD 修订的证明。*
+![AeroSense 原版与 Agent 修订版同视角对比](docs/images/aerosense-comparison.png)
+*真实 FreeCAD 概念模型与英文查看器：左侧原版，右侧修订版。本轮完成外露边缘圆滑处理、背面 USB 接口左右居中及底部通风槽新增；尚未验证制造适用性。*
+
+<details>
+<summary>查看点评过程截图</summary>
+
+![在外壳边缘标记并提出圆滑处理意见](docs/images/aerosense-feedback.png)
+*直接标记位置并描述修改要求。*
+
+![在原版底面标记并要求增加通风槽](docs/images/aerosense-bottom-feedback.png)
+*这张图展示修改前的原版及底部开孔要求。提交点评后，将继续修改指令发回 Agent。*
+
+</details>
 
 ## 你可以做什么
 

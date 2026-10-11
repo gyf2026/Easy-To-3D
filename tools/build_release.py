@@ -19,6 +19,8 @@ DOCS = (
     'decisions.md', 'platform-support.md', 'compatibility.md', 'external-models.md',
     'user-workflow.md', 'agent-delivery.md', 'quickstart.md', 'cli-workflow.zh-CN.md',
     'releases/v0.1.0a1.md', 'images/review-comparison.png',
+    'images/aerosense-feedback.png', 'images/aerosense-comparison.png',
+    'images/aerosense-bottom-feedback.png',
 )
 TREES = {
     'core/easy_to_3d': {'.py'}, 'viewer': {'.js', '.css', '.html'},
