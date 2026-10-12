@@ -8,7 +8,7 @@ include tools/build_release.py tools/generate_schemas.py
 include README.md README.zh-CN.md CONTRIBUTING.md SECURITY.md AGENTS.md LICENSE LICENSE-STATUS.md
 include docs/decisions.md docs/platform-support.md docs/compatibility.md docs/external-models.md
 include docs/user-workflow.md docs/agent-delivery.md docs/quickstart.md docs/cli-workflow.zh-CN.md
-include docs/releases/v0.1.0a1.md docs/images/review-comparison.png
+include docs/releases/v0.1.0a1.md docs/releases/v0.1.0a2.md docs/images/review-comparison.png
 recursive-include .github *.yml
 prune tests
 prune benchmarks

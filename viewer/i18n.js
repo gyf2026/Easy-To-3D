@@ -579,6 +579,8 @@ const messages={
   ]
 };
 
+messages['固定光照']=['Fixed lighting','照明を固定','Éclairage fixe'];
+
 const supported=['zh','en','ja','fr'];
 let locale='zh';
 try { const saved=localStorage.getItem('easy-to-3d:language'); if(supported.includes(saved))locale=saved; } catch {}

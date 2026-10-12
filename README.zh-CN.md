@@ -55,6 +55,6 @@ python -m pip install .
 
 ## 文档与贡献
 
-[Agent 引导流程](docs/user-workflow.md) · [完整 CLI 工作流](docs/cli-workflow.zh-CN.md) · [保存与打印](docs/agent-delivery.md) · [外部模型](docs/external-models.md) · [FreeCAD 示例](backend-examples/freecad/) · [参与贡献](CONTRIBUTING.md) · [安全反馈](SECURITY.md) · [许可清单](LICENSE-STATUS.md) · [Alpha 发行说明](docs/releases/v0.1.0a1.md)
+[Agent 引导流程](docs/user-workflow.md) · [完整 CLI 工作流](docs/cli-workflow.zh-CN.md) · [保存与打印](docs/agent-delivery.md) · [外部模型](docs/external-models.md) · [FreeCAD 示例](backend-examples/freecad/) · [参与贡献](CONTRIBUTING.md) · [安全反馈](SECURITY.md) · [许可清单](LICENSE-STATUS.md) · [Alpha 发行说明](docs/releases/v0.1.0a2.md)
 
 公开 CI 验证构建、安装及 CLI 启动。完整功能测试与原始验证材料目前单独维护，不随仓库分发；CI 通过不等于所有建模和交互流程均已验收。

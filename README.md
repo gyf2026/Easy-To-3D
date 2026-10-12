@@ -62,6 +62,6 @@ Static GLB and binary STL can be imported with explicit units and up-axis. Impor
 - [Delivery and printing](docs/agent-delivery.md) · [External model import](docs/external-models.md)
 - [FreeCAD examples](backend-examples/freecad/) · [Blender examples](backend-examples/blender/)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [License and bundled dependencies](LICENSE-STATUS.md)
-- [Alpha release notes](docs/releases/v0.1.0a1.md)
+- [Alpha release notes](docs/releases/v0.1.0a2.md)
 
 Public CI checks package build, installation and CLI startup. Full functional tests and raw validation evidence are currently maintained separately and are not included in this repository. See the compatibility matrix rather than interpreting a green CI badge as complete functional validation.

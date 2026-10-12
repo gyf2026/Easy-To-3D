@@ -33,3 +33,11 @@ The example is a requirement prompt, not a promise of identical geometry from ev
 项目数据放在软件仓库以外。首次使用失败时，记录操作步骤、系统、Python、客户端、后端版本和脱敏错误；不要在 Issue 上传私人模型或账号信息。
 
 See [the CLI workflow](cli-workflow.zh-CN.md) for exact commands and [compatibility](compatibility.md) for known limits. The viewer runs on a local loopback address and does not wake the Agent automatically.
+
+## Lighting / 光照
+
+The viewer defaults to an upper-left light that follows your view, with soft hemisphere fill. Select **Fixed lighting** in the right toolbar to restore the original world-fixed lighting. Both comparison panes use the same setting. This only changes illumination, not geometry, materials or annotation coordinates.
+
+The checkbox is a page-local display option: it is not stored in model versions, annotation views or cross-session preferences. Restoring an annotation view keeps the current lighting mode. Select the same mode manually when comparing with older screenshots.
+
+默认光照随视角移动，方便观察背面和底部。右侧勾选“固定光照”可恢复原来的空间固定光照，对比画布同步生效。该选项不写入模型或点评视角，也不保存为跨会话偏好；恢复点评视角时保留当前选择。

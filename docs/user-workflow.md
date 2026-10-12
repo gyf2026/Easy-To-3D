@@ -73,3 +73,9 @@ Agent读取确切版本和批次的 `review handoff`，恢复视角和坐标。�
 Language and naming: use the language the user uses to communicate with the Agent (zh/en/ja/fr), unless the user requests otherwise. Pass `project init --language <code>` and use that language for `--name`, `--feature`, design summaries and human-facing generated/export filenames. Keep technical keys and fixed artifact-contract paths unchanged. Open `view --language <code>` for the current conversation, including existing projects; never rename published artifacts or existing project paths in place. Unsupported conversation languages fall back to Chinese and offer the four supported choices. The user can change the viewer language manually.
 
 Visible review numbers are consecutive among non-deleted annotations and may change after deletion. Use annotation IDs plus source version/batch IDs as authoritative references, never numbers alone.
+
+## 查看器光照
+
+查看器默认使用随视角移动的左上方主光与柔和半球补光，便于观察背面结构。右侧“固定光照”默认不勾选，勾选后恢复空间中固定方向的原有光照。历史版本和最新版对比共享光照设置；切换不会更改模型、材质或点评坐标。
+
+“固定光照”是当前页面的显示选项，不写入模型版本或点评的视角记录，也不保存为跨会话偏好。恢复点评视角时沿用当前光照选择；如需与旧截图比较，请先手动选择相同光照模式。
