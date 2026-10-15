@@ -581,6 +581,8 @@ const messages={
 
 messages['固定光照']=['Fixed lighting','照明を固定','Éclairage fixe'];
 
+messages['平移']=['Pan','平行移動','Déplacer'];
+messages['左键拖动或单指拖动平移画面；滚轮缩放；浏览可恢复旋转与点评']=['Drag with the left mouse button or one finger to pan; scroll to zoom; Browse restores rotation and feedback','左ボタンまたは1本指でドラッグして平行移動。ホイールで拡大縮小。「閲覧」で回転とコメントに戻る','Faites glisser avec le bouton gauche ou un doigt pour déplacer la vue ; défilez pour zoomer ; Parcourir rétablit la rotation et les commentaires'];
 const supported=['zh','en','ja','fr'];
 let locale='zh';
 try { const saved=localStorage.getItem('easy-to-3d:language'); if(supported.includes(saved))locale=saved; } catch {}

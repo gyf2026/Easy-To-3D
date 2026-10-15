@@ -26,6 +26,8 @@
 - **保留每轮成果**：独立项目文件夹保存需求、原生文件、脚本、变体和不可变版本，可以备份并校验。
 - **准备交付文件**：按工作流导出 STL 和附图。打印适用性和专利附图要求仍需检查；剖视、爆炸图属于实验输出。
 
+**画布平移**：点击顶部“平移”，用鼠标左键或触屏单指拖动，将目标部位移到画面中心；点击“浏览”恢复旋转与双击点评。浏览模式下也可右键拖动平移。历史版本对比的左右画面共享观察位置，均支持平移；模型和标记坐标保持不变。
+
 ## 从一句话开始
 
 先获取代码，在独立 Python 环境安装：
@@ -55,6 +57,6 @@ python -m pip install .
 
 ## 文档与贡献
 
-[Agent 引导流程](docs/user-workflow.md) · [完整 CLI 工作流](docs/cli-workflow.zh-CN.md) · [保存与打印](docs/agent-delivery.md) · [外部模型](docs/external-models.md) · [FreeCAD 示例](backend-examples/freecad/) · [参与贡献](CONTRIBUTING.md) · [安全反馈](SECURITY.md) · [许可清单](LICENSE-STATUS.md) · [Alpha 发行说明](docs/releases/v0.1.0a2.md)
+[Agent 引导流程](docs/user-workflow.md) · [完整 CLI 工作流](docs/cli-workflow.zh-CN.md) · [保存与打印](docs/agent-delivery.md) · [外部模型](docs/external-models.md) · [FreeCAD 示例](backend-examples/freecad/) · [参与贡献](CONTRIBUTING.md) · [安全反馈](SECURITY.md) · [许可清单](LICENSE-STATUS.md) · [Alpha 发行说明](docs/releases/v0.1.0a3.md)
 
 公开 CI 验证构建、安装及 CLI 启动。完整功能测试与原始验证材料目前单独维护，不随仓库分发；CI 通过不等于所有建模和交互流程均已验收。

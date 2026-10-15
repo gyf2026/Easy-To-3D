@@ -29,6 +29,8 @@ A local workbench for mechanical design, 3D model review, drawing preparation an
 - **Keep your work.** Store requirements, source files, scripts, variants and immutable versions in a separate local project folder. Export and verify backups.
 - **Prepare delivery.** Produce STL files and drawings through supported workflows. Printing suitability and patent-drawing requirements still need review; experimental section/exploded outputs are not a compliance guarantee.
 
+**Canvas panning.** Select **Pan** in the marker toolbar and drag with the left mouse button or one finger to bring the target area to the centre of the view. Select **Browse** to return to rotation and double-click feedback; right-drag also pans while browsing. The history pane and the current pane share one viewing position and both support panning; model and annotation coordinates stay unchanged.
+
 ## Start with your Agent
 
 Clone this repository, then install in an isolated Python environment:
@@ -62,6 +64,6 @@ Static GLB and binary STL can be imported with explicit units and up-axis. Impor
 - [Delivery and printing](docs/agent-delivery.md) · [External model import](docs/external-models.md)
 - [FreeCAD examples](backend-examples/freecad/) · [Blender examples](backend-examples/blender/)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [License and bundled dependencies](LICENSE-STATUS.md)
-- [Alpha release notes](docs/releases/v0.1.0a2.md)
+- [Alpha release notes](docs/releases/v0.1.0a3.md)
 
 Public CI checks package build, installation and CLI startup. Full functional tests and raw validation evidence are currently maintained separately and are not included in this repository. See the compatibility matrix rather than interpreting a green CI badge as complete functional validation.
