@@ -28,7 +28,9 @@ reverts it, and until then the copy claims a commit that does not contain it.
    (the builder refuses to run when they disagree), commit, and tag `v<version>`.
 2. Push the tag. `.github/workflows/skill-bundle.yml` builds the bundle, fails if
    the stamp disagrees with the checkout, and attaches `structural-design.zip` plus
-   `structural-design-release.md` to the GitHub release.
+   `structural-design-release.md` to the GitHub release. The builder also compares
+   the archive against the assembled directory, so a zip missing `BUILD.json` (or
+   missing any other file the bundle has) fails the build instead of shipping.
 3. Download the zip from the release and upload it as the new skill version in the
    skill library. This step stays manual: the upload form lives in the account that
    owns the listing, and marketplace rules forbid automating submissions.

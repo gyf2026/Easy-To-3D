@@ -59,6 +59,12 @@ def bundle_files(target):
                   if p.is_file() and '__pycache__' not in p.parts and p.name != BUILD_FILE)
 
 
+def payload_files(target):
+    """Everything the archive must carry, including the build record itself."""
+    return sorted(p for p in target.rglob('*')
+                  if p.is_file() and '__pycache__' not in p.parts)
+
+
 def relative(path):
     return path.relative_to(ROOT).as_posix()
 
@@ -283,9 +289,26 @@ def zip_skill(target, output):
     if archive.exists():
         archive.unlink()
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:
-        for path in bundle_files(target):
+        for path in payload_files(target):
             bundle.write(path, path.relative_to(target.parent))
+    verify_archive(archive, target)
     return archive
+
+
+def verify_archive(archive, target):
+    """The directory can be right while the archive is wrong; check what ships."""
+    with zipfile.ZipFile(archive) as bundle:
+        names = bundle.namelist()
+    expected = {str(path.relative_to(target.parent)).replace(os.sep, '/')
+                for path in payload_files(target)}
+    missing = sorted(expected - set(names))
+    if missing:
+        raise ValueError('Archive is missing files that the bundle has: ' + repr(missing[:5]))
+    stamp = f'{target.name}/scripts/{BUILD_FILE}'
+    if stamp not in names:
+        raise ValueError('Archive must carry the build record at ' + stamp)
+    if len(names) != len(expected):
+        raise ValueError(f'Archive has {len(names)} entries, bundle has {len(expected)}')
 
 
 def release_notes(record, archive, output):
