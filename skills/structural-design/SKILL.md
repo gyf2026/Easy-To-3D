@@ -17,9 +17,9 @@ the bundle is absent. `et3d --json doctor` is the first check when any command f
 
 `scripts/BUILD.json` records the version, source commit and a SHA-256 per file this
 bundle was built from. Run `et3d --bundle-info` to print them together with the
-runtime actually loaded. Treat the skill directory as read-only: editing a bundled
-file breaks that record, and upstream fixes reach you only by installing a newer
-bundle.
+runtime actually loaded. These files are best left as shipped: a local edit makes
+that record inaccurate and is replaced by the next install, so upstream fixes and
+local improvements are better carried by a new build than by patching this copy.
 
 The viewer runs on `127.0.0.1` and is opened by `et3d view`. Keep it in the Agent
 conversation: start it, read the printed URL, and give that URL to the user.
