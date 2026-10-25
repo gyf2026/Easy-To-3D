@@ -13,7 +13,7 @@ examples_en:
 - Make a 60×40 L-bracket with a 4 mm base plate and two 6 mm holes 10 mm from the edge, then export an STL
 - Raise the upright 8 mm over the last version, change four slots to three, and publish a new version I can compare side by side
 - Add a row of vents to the side of this enclosure, following the spots I marked on the model
-version: 0.1.0a5
+version: 0.1.0a6
 author: gyf2026
 ---
 
@@ -33,9 +33,21 @@ substitute the form that matches the host OS.
 | Windows | `py -3 <skill>\scripts\et3d.py`, or `python` when `py` is absent |
 
 `<skill>` is the directory containing this `SKILL.md`, and `<skill>/scripts` holds the
-bundled runtime at `easy_to_3d`. If the interpreter you tried reports a missing
-module, try the other one before concluding the skill is broken. `et3d --json doctor`
-is the first check when any command fails.
+bundled runtime at `easy_to_3d`. There is no third-party dependency to install: the
+runtime is standard library only.
+
+**Any CPython from 3.10 up runs it.** It has been run on Windows with 3.10 through
+3.15 and on macOS with 3.13, so a newer interpreter is never a reason to expect a
+break. Interpreters below 3.10 refuse in one line, naming the version and the
+executable they were handed, instead of dying inside a module.
+
+That refusal is a repair instruction, not a dead end. Read the version in it, pick a
+newer interpreter the machine already has — `py -3.13`, `py -3.12`, `python3.13`, or
+whichever one your own runtime ships — and rerun the same command with it. A missing
+module reported by an otherwise working interpreter means the same thing: try the
+other launcher form before concluding the skill is broken. Only escalate to the user
+when no interpreter 3.10+ exists at all. `et3d --json doctor` is the first check when
+any command fails.
 
 `scripts/BUILD.json` records the version, source commit and a SHA-256 per file this
 bundle was built from. Run `et3d --bundle-info` to print them together with the

@@ -71,8 +71,14 @@ python3 tools/build_skill.py --output dist/skill --notes
 python3 tools/build_skill.py --check --output dist/skill
 ```
 
-`--notes` writes `dist/structural-design-release.md`, a card with the version,
-commit, fingerprint and upload checklist for the library form.
+`--notes` writes `dist/structural-design-release.md`, a card that answers the upload
+form rather than just describing the build. It carries the fields to paste — `name`,
+both display names, version, author, the Chinese and English descriptions, and the
+three Chinese examples for the detail page — plus a suggested category, the command
+that redraws the icon, the four answers reviewers ask for (prerequisites, scope,
+safety, size), the pre-upload `--check` and the `--bundle-info` call to verify what
+was actually served after publishing. Read the version, commit and fingerprint off the
+same card so the listing and the release cannot drift apart.
 
 ## Detecting drift
 

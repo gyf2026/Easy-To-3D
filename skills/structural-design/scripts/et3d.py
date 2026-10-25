@@ -19,6 +19,8 @@ import json
 import sys
 from pathlib import Path
 
+MINIMUM = (3, 10)
+
 HERE = Path(__file__).resolve().parent
 BUNDLED = HERE / "easy_to_3d"
 CHECKOUT = HERE.parents[2] / "core" if len(HERE.parents) > 2 else None
@@ -75,7 +77,28 @@ def bundle_info():
     return 0 if origin else 2
 
 
+def too_old():
+    """Report a too-old interpreter as a one-line repair instruction.
+
+    Kept free of newer syntax on purpose: this is the one place that must still
+    parse and speak on an interpreter the runtime itself cannot run on.
+    """
+    found = "%d.%d.%d" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])
+    launcher = str(HERE / "et3d.py")
+    sys.stderr.write(
+        "Easy-To-3D needs Python 3.10 or newer; this is Python " + found + "\n"
+        "  interpreter: " + sys.executable + "\n"
+        "Rerun the same command with a newer one, for example:\n"
+        "  py -3.13 " + launcher + " ...      (Windows)\n"
+        "  python3.13 " + launcher + " ...    (macOS, Linux)\n"
+        "Nothing is broken; the interpreter is just older than the runtime.\n"
+    )
+
+
 def main():
+    if sys.version_info < MINIMUM:
+        too_old()
+        return 2
     if len(sys.argv) > 1 and sys.argv[1] == "--bundle-info":
         return bundle_info()
     origin = activate()
