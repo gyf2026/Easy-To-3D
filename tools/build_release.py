@@ -18,6 +18,7 @@ ROOT_FILES = (
 DOCS = (
     'decisions.md', 'platform-support.md', 'compatibility.md', 'external-models.md',
     'user-workflow.md', 'agent-delivery.md', 'quickstart.md', 'cli-workflow.zh-CN.md',
+    'skill-release.md',
     'releases/v0.1.0a1.md', 'releases/v0.1.0a2.md', 'releases/v0.1.0a3.md',
     'images/review-comparison.png',
     'images/aerosense-feedback.png', 'images/aerosense-comparison.png',
@@ -26,7 +27,7 @@ DOCS = (
 )
 TREES = {
     'core/easy_to_3d': {'.py'}, 'viewer': {'.js', '.css', '.html'},
-    'schemas': {'.json'}, 'skills/structural-design': {'.md'},
+    'schemas': {'.json'}, 'skills/structural-design': {'.md', '.py'},
     'backend-examples/freecad': {'.py'}, 'backend-examples/blender': {'.py'},
     'integrations': {'.md'}, '.github': {'.yml', '.yaml'},
 }
@@ -36,7 +37,8 @@ def public_sources(root):
     paths = {root / p for p in ROOT_FILES}
     paths.update(root / 'docs' / p for p in DOCS)
     paths.update(root / p for p in (
-        'viewer/vendor/THREE-LICENSE', 'tools/build_release.py', 'tools/generate_schemas.py'))
+        'viewer/vendor/THREE-LICENSE', 'tools/build_release.py', 'tools/generate_schemas.py',
+        'tools/build_skill.py'))
     for directory, suffixes in TREES.items():
         for path in (root / directory).rglob('*'):
             if path.is_file() and path.suffix in suffixes and '__pycache__' not in path.parts:
