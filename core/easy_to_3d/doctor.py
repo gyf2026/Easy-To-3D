@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from .entry import cli_argv
 from .execution import run
 from .storage import now
 
@@ -57,7 +58,7 @@ def _probe_doctor(backend='all',explicit=None,probe=False):
         if not path or result.get('launch')=='fail' or result.get('script_export')=='fail':
             result['setup_guidance']={
                 'provided_path':str(explicit) if explicit else None,
-                'configure_command':['easy-to-3d','--json','doctor','--backend',name,'--executable','<可执行程序完整路径>','--probe'],
+                'configure_command':cli_argv()+['--json','doctor','--backend',name,'--executable','<可执行程序完整路径>','--probe'],
                 'download':DOWNLOADS[name],
                 'installation_workflow':'未安装时，由 Agent 提出官方版本、系统架构、安装位置及权限需求；经用户同意后执行下载与安装，核验官方提供的校验信息，配置路径并重新运行实际探测。',
                 'recommended_configuration':{'python':'3.10 或以上（核心运行环境）','backend':'官方稳定版；优先复现项目已验证版本，其他版本安装后需通过实际探测','validated_version':'FreeCAD 1.1.4 (macOS/Windows中文路径流程实测)' if name=='freecad' else 'Blender 4.5.3 LTS (macOS); 4.5.10 / 5.2.1 LTS (Windows)' ,'architecture':'与操作系统及处理器架构匹配；macOS arm64和Windows AMD64有局部实测，其他架构待验证'},

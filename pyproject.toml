@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easy-to-3d"
-version = "0.1.0a4"
+version = "0.1.0a5"
 description = "Local, versioned structural design and 3D review workbench"
 readme = "README.md"
 requires-python = ">=3.10"

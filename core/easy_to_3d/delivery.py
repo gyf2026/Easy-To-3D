@@ -1,5 +1,6 @@
 """Agent-first delivery instructions: model export and printer-specific slicing are separate."""
 from pathlib import Path
+from .entry import cli_argv
 from .storage import uid
 
 def instructions(project, ident, language="zh"):
@@ -7,10 +8,11 @@ def instructions(project, ident, language="zh"):
     output=project.root/'deliveries'/uid('print')
     backup_path=project.root.parent/'backups'/(project.data['id']+'_'+uid('snapshot')+'.zip')
     # argv is authoritative and portable; do not embed user paths into a shell command.
-    commands=[['easy-to-3d','--json','project','inspect','--project',str(project.root)],
-              ['easy-to-3d','--json','version','verify','--project',str(project.root),'--version',ident],
-              ['easy-to-3d','--json','backup','--project',str(project.root),'--output',str(backup_path)],
-              ['easy-to-3d','--json','export','--project',str(project.root),'--version',ident,'--profile','print','--output',str(output)]]
+    prefix=cli_argv()
+    commands=[prefix+['--json','project','inspect','--project',str(project.root)],
+              prefix+['--json','version','verify','--project',str(project.root),'--version',ident],
+              prefix+['--json','backup','--project',str(project.root),'--output',str(backup_path)],
+              prefix+['--json','export','--project',str(project.root),'--version',ident,'--profile','print','--output',str(output)]]
     import json
     text=f'''请作为 Agent 保存项目并准备打印文件。项目路径：{project.root}
 项目 ID：{project.data['id']}；模型版本：{ident}；版本摘要：{version['summary']}。

@@ -2,6 +2,7 @@
 import copy
 import math
 from .contracts import require, matrix, transform
+from .entry import cli_argv
 from .storage import read, confined
 
 
@@ -40,7 +41,7 @@ def review_handoff(project, version_id, batch_id):
         if value.get('markup'):value['points_source']=[transform(reverse,p) for p in value['markup']['points_project']]
         items.append(value)
     require(bool(items),'Review batch has no active annotations')
-    base=['easy-to-3d','--json'];args=['--project',str(project.root),'--version',version_id,'--batch',batch_id]
+    base=cli_argv()+['--json'];args=['--project',str(project.root),'--version',version_id,'--batch',batch_id]
     return {'schema_version':'1.0','kind':'external-3d-review-handoff','project_id':project.data['id'],
         'source_version_id':version_id,'variant_id':version['variant_id'],'batch':copy.deepcopy(batch),
         'source_model':{'path':str(confined(root,artifact['native'])),'sha256':version['files'][artifact['native']],

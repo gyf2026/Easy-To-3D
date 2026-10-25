@@ -22,10 +22,38 @@ sources into `structural-design/scripts/`:
 Never hand-edit a bundle or an installed skill directory: the next rebuild silently
 reverts it, and until then the copy claims a commit that does not contain it.
 
+## The listing header
+
+The library parser rejects a zip before human review when `SKILL.md` is missing a
+required field, so the header is part of the deliverable, not decoration.
+`tools/build_skill.py` validates it on every build and refuses to ship otherwise.
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `name` | yes | Lowercase letters, digits, single hyphens |
+| `display_name`, `display_name_en` | yes | Shown in the market listing |
+| `description` | yes | Purpose plus trigger words; the Agent matches on this |
+| `description_zh`, `description_en` | yes | Detail-page introduction |
+| `version` | yes | Must equal `pyproject.toml`, or the listing contradicts `--bundle-info` |
+| `author` | yes | Partner or account name |
+| `examples_zh`, `examples_en` | recommended | Detail-page "try it like this"; reviewers tend to run these |
+
+Values must survive plain YAML: a `: ` inside an unquoted value, or a leading `#`,
+`-` or quote, is rejected instead of silently truncating the field.
+
+The listing icon is generated rather than stored:
+
+```
+python3 tools/make_skill_icon.py      # dist/structural-design-icon.png, 512x512
+```
+
+Upload the icon separately in the library form; it is not part of the zip.
+
 ## Release
 
 1. Bump `version` in `pyproject.toml`, mirror it in `core/easy_to_3d/__init__.py`
-   (the builder refuses to run when they disagree), commit, and tag `v<version>`.
+   and in the `SKILL.md` header (the builder refuses to run when any of them
+   disagree), commit, and tag `v<version>`.
 2. Push the tag. `.github/workflows/skill-bundle.yml` builds the bundle, fails if
    the stamp disagrees with the checkout, and attaches `structural-design.zip` plus
    `structural-design-release.md` to the GitHub release. The builder also compares

@@ -20,7 +20,7 @@ DOCS = (
     'user-workflow.md', 'agent-delivery.md', 'quickstart.md', 'cli-workflow.zh-CN.md',
     'skill-release.md',
     'releases/v0.1.0a1.md', 'releases/v0.1.0a2.md', 'releases/v0.1.0a3.md',
-    'releases/v0.1.0a4.md',
+    'releases/v0.1.0a4.md', 'releases/v0.1.0a5.md',
     'images/review-comparison.png',
     'images/aerosense-feedback.png', 'images/aerosense-comparison.png',
     'images/aerosense-bottom-feedback.png',
@@ -39,7 +39,7 @@ def public_sources(root):
     paths.update(root / 'docs' / p for p in DOCS)
     paths.update(root / p for p in (
         'viewer/vendor/THREE-LICENSE', 'tools/build_release.py', 'tools/generate_schemas.py',
-        'tools/build_skill.py'))
+        'tools/build_skill.py', 'tools/make_skill_icon.py'))
     for directory, suffixes in TREES.items():
         for path in (root / directory).rglob('*'):
             if path.is_file() and path.suffix in suffixes and '__pycache__' not in path.parts:

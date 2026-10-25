@@ -46,6 +46,57 @@ BUILD_FILE = 'BUILD.json'
 TEXT_SUFFIXES = {'.md', '.py', '.json', '.js', '.css', '.html'}
 VIEWER_SUFFIXES = {'.js', '.css', '.html'}
 TRACKED_FOR_DIRTY = ('core', 'viewer', 'schemas', 'skills', 'tools', 'pyproject.toml', '.github')
+# Fields the skill library's upload parser requires; a missing one is rejected before review.
+MARKET_FIELDS = ('name', 'display_name', 'display_name_en', 'description',
+                 'description_zh', 'description_en', 'version', 'author')
+CATEGORIES = ('3D 建模与打印', '设计工具', '工程计算')
+
+
+def frontmatter(text):
+    """Top-level keys of a SKILL.md header, without pulling in a YAML dependency."""
+    if not text.startswith('---'):
+        return {}
+    end = text.find('\n---', 3)
+    if end == -1:
+        return {}
+    data, key = {}, None
+    for line in text[3:end].splitlines():
+        if not line.strip() or line.lstrip().startswith('#'):
+            continue
+        if line[0] not in ' \t' and ':' in line and not line.startswith('-'):
+            key, _, value = line.partition(':')
+            key, value = key.strip(), value.strip()
+            data[key] = [] if not value else value
+        elif key and line.lstrip().startswith('-'):
+            if not isinstance(data.get(key), list):
+                data[key] = []
+            item = line.lstrip()[1:].strip()
+            data[key].append(item[1:-1] if len(item) > 1 and item[0] == item[-1] and item[0] in '"\'' else item)
+    return data
+
+
+def verify_frontmatter(text, version):
+    """Catch what the upload form would reject, before the form does."""
+    data = frontmatter(text)
+    missing = [key for key in MARKET_FIELDS if not data.get(key)]
+    if missing:
+        raise ValueError('SKILL.md frontmatter is missing required market fields: ' + repr(missing))
+    if not re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)*', str(data['name'])):
+        raise ValueError('name must be lowercase letters, digits and single hyphens: ' + repr(data['name']))
+    if str(data['version']) != version:
+        raise ValueError(f'SKILL.md declares version {data["version"]}, the runtime is {version}; '
+                         'the market listing would disagree with --bundle-info')
+    if not data.get('examples_zh'):
+        raise ValueError('SKILL.md needs examples_zh: the detail page shows Chinese examples, '
+                         'and reviewers tend to run them as the acceptance test')
+    for key, value in data.items():
+        for item in (value if isinstance(value, list) else [value]):
+            item = str(item)
+            if ': ' in item or item[:1] in ('#', '-', '?', '!', '&', '*', '|', '>', '@', '`', '"', "'"):
+                raise ValueError(f'frontmatter {key} would not survive YAML parsing; quote and reword it: '
+                                 + repr(item[:70]))
+    return data
+
 
 
 def files(directory, suffixes):
@@ -182,8 +233,7 @@ def verify(target, record):
     """Refuse to ship a bundle that cannot be imported, that leaks local paths, or
     whose stamped hashes disagree with the bytes on disk."""
     skill_md = (target / 'SKILL.md').read_text(encoding='utf-8')
-    if not skill_md.startswith('---') or 'name:' not in skill_md or 'description:' not in skill_md:
-        raise ValueError('SKILL.md frontmatter is incomplete')
+    listing = verify_frontmatter(skill_md, record['runtime']['version'])
     if 'scripts/et3d.py' not in skill_md:
         raise ValueError('SKILL.md does not tell the Agent how to start the bundled runtime')
     if BUILD_FILE not in skill_md:
@@ -220,7 +270,7 @@ def verify(target, record):
         raise ValueError('Bundled viewer or GLB writer is missing: ' + repr(state))
     if state['version'] != record['runtime']['version']:
         raise ValueError(f'Stamp says {record["runtime"]["version"]}, runtime reports {state["version"]}')
-    return len(bundle_files(target)) + 1
+    return len(bundle_files(target)) + 1, listing
 
 
 def check(output):
@@ -311,8 +361,8 @@ def verify_archive(archive, target):
         raise ValueError(f'Archive has {len(names)} entries, bundle has {len(expected)}')
 
 
-def release_notes(record, archive, output):
-    """A paste-ready card for the skill library's upload form."""
+def release_notes(record, archive, output, listing):
+    """A paste-ready upload card: identity, form fields, review answers, checks."""
     source = record['source']
     origin = source.get('tag') or (source['commit'][:7] if source.get('commit') else 'unknown')
     state = 'clean' if not source['dirty'] else 'dirty working tree'
@@ -321,42 +371,96 @@ def release_notes(record, archive, output):
     except ValueError:
         shown = str(output)
     lines = [
-        f"# {BUNDLE} · {record['runtime']['version']}",
+        f"# {listing['display_name']} · {record['runtime']['version']}",
         '',
-        f"- Bundle: `{archive.name}` ({archive.stat().st_size // 1024} KB, "
-        f"{record['counts']['files']} files)",
-        f"- Source: {source.get('repository') or 'local'} @ {origin} ({state}, branch {source.get('branch')})",
-        f"- Built: {record['built_at']}",
-        f"- Fingerprint: `{record['fingerprint'][:16]}`",
+        f"- 包体：`{archive.name}`（{archive.stat().st_size // 1024} KB，{record['counts']['files']} 个文件）",
+        f"- 源码：{source.get('repository') or 'local'} @ {origin}（{state}，分支 {source.get('branch')}）",
+        f"- 构建：{record['built_at']}",
+        f"- 指纹：`{record['fingerprint'][:16]}`",
         '',
     ]
     if source['dirty']:
         lines += [
-            '> Built from uncommitted changes. Commit, tag, and rebuild before uploading, or the',
-            '> published skill will claim a commit that does not contain its own code.',
+            '> 这个包是从未提交的改动构建的。先提交、打 tag、重建再上传，',
+            '> 否则上架的技能会声称属于一个并不包含它代码的 commit。',
             '',
         ]
     lines += [
-        '## Verify before uploading',
+        '## 表单字段（直接复制）',
+        '',
+        f"- 标识 name：`{listing['name']}`",
+        f"- 中文展示名：{listing['display_name']}",
+        f"- 英文展示名：{listing['display_name_en']}",
+        f"- 版本：`{listing['version']}`",
+        f"- 作者：{listing['author']}",
+        '',
+        '中文简介：',
+        '',
+        '```text',
+        str(listing['description_zh']),
+        '```',
+        '',
+        '英文简介：',
+        '',
+        '```text',
+        str(listing['description_en']),
+        '```',
+        '',
+        '详情页「试试这样用」：',
+        '',
+    ]
+    examples = listing.get('examples_zh') or []
+    lines += [f'{number}. {item}' for number, item in enumerate(examples, 1)]
+    if not examples:
+        lines.append('（缺，在 SKILL.md 的 examples_zh 里补）')
+    lines += [
+        '',
+        '建议类目：' + '、'.join(CATEGORIES[:2]) + '（后台最多选 5 个，按实际可选项挑）',
+        '',
+        '图标：`dist/structural-design-icon.png`（512×512，`python3 tools/make_skill_icon.py` 可重画；'
+        '上传时单独提交，不放进 zip）',
+        '',
+        '## 审核会问的四件事',
+        '',
+        '**1. 前置条件。** 需要本机已有 FreeCAD 或 Blender 之一，技能自带运行时但不自带 CAD 内核。'
+        '没找到时先问用户是否已安装、索取可执行文件完整路径并用 `--executable` 配置；'
+        '确实没装才给官方下载链接、匹配系统与架构的稳定版本，经用户同意后安装，'
+        '装完必须 `--probe` 实测。不承诺零配置出模型。',
+        '',
+        '**2. 能力边界。** 参数化零件、外壳、支架、板件、小装配体，以及对已有网格的改版。'
+        '不做有机曲面的自动保证、不切片成机器 G-code、不判定可制造性或合规性——'
+        '未实测前一律是 unknown。',
+        '',
+        '**3. 安全说明。** 查看器只监听 `127.0.0.1`，随机端口、一次性 token，并校验 Host 与 Origin；'
+        '没有任何可执行任意命令的 HTTP 端点。建模通过本机 CAD 子进程完成，这是技能的工作方式。'
+        '技能本体不发起网络请求，不上传模型、项目或用户数据。',
+        '',
+        '**4. 体积。** 解压后 '
+        + f"{record['counts']['uncompressed_bytes'] / 1048576:.1f} MB"
+        + '（Three.js 占大头），zip '
+        + f"{archive.stat().st_size / 1024:.0f} KB" + '。',
+        '',
+        '## 上传前自检',
         '',
         '```',
         f'python3 tools/build_skill.py --check --output {shown}',
         '```',
-        'Expect `"state": "fresh"`. A `stale` result means the repository moved after the build.',
         '',
-        '## After the skill is live',
+        '期望 `"state": "fresh"`。`stale` 表示构建之后仓库又动过，需重建；'
+        '`tampered` 表示包内文件与自身记录不符，不要上传。',
         '',
-        'Anyone holding the installed skill can confirm which code it runs:',
+        '## 上线后核对',
         '',
         '```',
         'python3 <skill>/scripts/et3d.py --bundle-info',
         '```',
         '',
-        'It prints the same version, commit and fingerprint recorded here.',
+        '打印的版本、commit、指纹应与本卡一致。技能库那份是静态快照，没有回推通道：'
+        '上游更新后要重建 zip、重新上传，再用 `--install` 同步本机副本。',
     ]
     recent = git('log', '-6', '--oneline', '--no-decorate')
     if recent:
-        lines += ['', '## Recent commits', '', '```', recent, '```']
+        lines += ['', '## 最近提交', '', '```', recent, '```']
     text = '\n'.join(lines) + '\n'
     archive.parent.joinpath(BUNDLE + '-release.md').write_text(text, encoding='utf-8')
     return archive.parent / (BUNDLE + '-release.md')
@@ -383,7 +487,7 @@ def main():
         return 0 if verdict['state'] == 'fresh' else 1
 
     target, record = build(output, force=args.force)
-    count = verify(target, record)
+    count, listing = verify(target, record)
     archive = zip_skill(target, output)
     summary = {
         'skill': str(target),
@@ -400,7 +504,7 @@ def main():
         'install_required': False,
     }
     if args.notes:
-        summary['notes'] = str(release_notes(record, archive, output))
+        summary['notes'] = str(release_notes(record, archive, output, listing))
     if args.install:
         summary['local_install'] = install(target, Path(args.install))
     print(json.dumps(summary, ensure_ascii=False, indent=2))

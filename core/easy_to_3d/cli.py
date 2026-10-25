@@ -7,7 +7,7 @@ from .project import Project
 from .storage import ContractError, Conflict, read, atomic, confined, digest, now
 
 def parser():
-    p=argparse.ArgumentParser(prog='easy-to-3d'); p.add_argument('--json',action='store_true'); sub=p.add_subparsers(dest='command',required=True)
+    p=argparse.ArgumentParser(prog=Path(sys.argv[0]).name or 'easy-to-3d'); p.add_argument('--json',action='store_true'); sub=p.add_subparsers(dest='command',required=True)
     doctor=sub.add_parser('doctor'); doctor.add_argument('--backend',choices=['freecad','blender','all'],default='all'); doctor.add_argument('--executable'); doctor.add_argument('--probe',action='store_true');doctor.add_argument('--cache');doctor.add_argument('--refresh',action='store_true');doctor.add_argument('--session-report')
     workflow=sub.add_parser('workflow-guide');workflow.add_argument('--task',choices=['organic','precision','mesh-edit','texture','save','print'],required=True);workflow.add_argument('--report')
     project=sub.add_parser('project'); ps=project.add_subparsers(dest='action',required=True)
