@@ -320,13 +320,21 @@ def check(output):
 
 
 def install(target, skills_root):
-    """Replace a locally installed copy so the local Agent uses the same bytes."""
+    """Replace a locally installed copy so the local Agent uses the same bytes.
+
+    The replaced copy is moved to a sibling directory, never into the skills
+    directory itself: every directory that holds a SKILL.md is discovered as a
+    skill, so a backup named structural-design.bak-* would load as another copy
+    of the same skill and show up as duplicates in the client's skill list.
+    """
     skills_root = skills_root.expanduser().resolve()
     if not skills_root.is_dir():
         raise ValueError('Skills directory does not exist: ' + str(skills_root))
     destination = skills_root / BUNDLE
     if destination.exists():
-        backup = skills_root / (BUNDLE + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S'))
+        vault = skills_root.parent / (skills_root.name + '-backups')
+        vault.mkdir(exist_ok=True)
+        backup = vault / (BUNDLE + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S'))
         shutil.move(str(destination), str(backup))
     else:
         backup = None
