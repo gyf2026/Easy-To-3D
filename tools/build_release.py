@@ -21,6 +21,7 @@ DOCS = (
     'skill-release.md',
     'releases/v0.1.0a1.md', 'releases/v0.1.0a2.md', 'releases/v0.1.0a3.md',
     'releases/v0.1.0a4.md', 'releases/v0.1.0a5.md', 'releases/v0.1.0a6.md',
+    'releases/v0.1.0a7.md',
     'images/review-comparison.png',
     'images/aerosense-feedback.png', 'images/aerosense-comparison.png',
     'images/aerosense-bottom-feedback.png',

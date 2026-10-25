@@ -1,7 +1,7 @@
 ---
 name: structural-design
-display_name: 结构设计与3D评审
-display_name_en: Structural Design and 3D Review
+display_name: 3D设计与评审修改
+display_name_en: 3D Design, Review and Revision
 description: Build and revise mechanical parts, enclosures and small static assemblies with Easy-To-3D, using native CAD or Blender scripts, versioned 3D reviews, drawings and print exports. Use for Easy-To-3D design projects; artistic sculpting remains experimental. 触发词：建模、结构设计、3D打印、支架、外壳、零件、改模型、看模型、旋转模型、加个孔、加高、减薄、版本对比、新旧对比、导出STL、导出图纸、FreeCAD、Blender、机械结构。
 description_zh: 面向机械零件、外壳与小装配体的设计与改版工作台：Agent 写 FreeCAD/Blender 脚本建模，用户在浏览器里旋转查看、在模型表面点位置写点评，Agent 按点评出子版本再同视角新旧对比。含毫米单位与坐标约定、逐版本不可变快照、需求测量比对、图纸与打印导出。需要本机已有可用的 FreeCAD 或 Blender；没有时会引导用户提供安装位置或按官方来源安装。
 description_en: A design and revision workbench for mechanical parts, enclosures and small assemblies. The Agent writes FreeCAD or Blender scripts; the user rotates the model in a browser, annotates points on its surfaces, and the Agent publishes a child version that is compared side by side from the same camera. Millimetre conventions, immutable version snapshots, requirement measurement checks, drawings and print export. Requires a working local FreeCAD or Blender; when neither exists the Agent asks for its location or guides an official installation.
@@ -13,7 +13,7 @@ examples_en:
 - Make a 60×40 L-bracket with a 4 mm base plate and two 6 mm holes 10 mm from the edge, then export an STL
 - Raise the upright 8 mm over the last version, change four slots to three, and publish a new version I can compare side by side
 - Add a row of vents to the side of this enclosure, following the spots I marked on the model
-version: 0.1.0a6
+version: 0.1.0a7
 author: gyf2026
 ---
 
