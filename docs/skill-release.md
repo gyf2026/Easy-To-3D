@@ -9,14 +9,19 @@ with a mechanical answer.
 ## One source of truth
 
 The bundle is derived, never edited. `tools/build_skill.py` copies exactly these
-sources into `structural-design/scripts/`:
+sources into `structural-design/scripts/`, collapsing the runtime into one archive
+so no shipped path sits more than two levels below the skill root:
 
 | Source | In the bundle |
 | --- | --- |
-| `core/easy_to_3d/**.py` | `scripts/easy_to_3d/` |
-| `viewer/**` | `scripts/easy_to_3d/web/` |
-| `schemas/*.json` | `scripts/easy_to_3d/schemas/` |
+| `core/easy_to_3d/**.py`, `viewer/**`, `schemas/*.json` | inside `scripts/easy_to_3d.zip` |
 | `skills/structural-design/SKILL.md`, `references/`, `scripts/et3d.py` | as-is |
+
+The launcher unpacks that archive once per build fingerprint into the user's cache
+directory and reuses it, so the first command of a session costs one extraction.
+`verify()` fails the build if any shipped path goes deeper than two levels, and
+again if the archive's members disagree with the stamp, so the depth limit cannot
+regress quietly.
 
 `dist/` is gitignored and rebuildable; nothing in the repository imports from it.
 Never hand-edit a bundle or an installed skill directory: the next rebuild silently
@@ -102,9 +107,11 @@ python3 tools/build_skill.py --check --output ~/.workbuddy/skills
 python3 <skill>/scripts/et3d.py --bundle-info
 ```
 
-Prints the stamped version, commit, tag, build time, fingerprint, and which runtime
-the launcher will actually load (`bundled`, `checkout`, or `installed`). A user
-reporting a bug can include this output instead of describing their setup.
+Prints the stamped version, commit, tag, build time, fingerprint, which runtime the
+launcher will actually load (`bundled`, `checkout`, or `installed`), and — for a
+bundled runtime — whether it came from the archive or a plain directory, plus the
+path it was unpacked to. A user reporting a bug can include this output instead of
+describing their setup.
 
 ## Keeping the local Agent on the new version
 
@@ -112,5 +119,7 @@ reporting a bug can include this output instead of describing their setup.
 python3 tools/build_skill.py --output dist/skill --force --install ~/.workbuddy/skills
 ```
 
-The previous copy is moved to `~/.workbuddy/skills/structural-design.bak-<timestamp>`
-rather than deleted.
+The previous copy is moved to `~/.workbuddy/skills-backups/structural-design.bak-<timestamp>`
+rather than deleted. It goes to a sibling directory, not into the skills directory:
+every directory holding a `SKILL.md` is discovered as a skill, so a backup left
+beside its successor loads as a second copy of the same skill.

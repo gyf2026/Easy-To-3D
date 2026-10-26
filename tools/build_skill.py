@@ -444,7 +444,8 @@ def install(target, skills_root):
     destination = skills_root / BUNDLE
     if destination.exists():
         vault = skills_root.parent / (skills_root.name + '-backups')
-        vault.mkdir(exist_ok=True)
+        if not vault.is_dir():
+            vault.mkdir(parents=True)
         backup = vault / (BUNDLE + '.bak-' + datetime.now().strftime('%Y%m%d-%H%M%S'))
         shutil.move(str(destination), str(backup))
     else:
