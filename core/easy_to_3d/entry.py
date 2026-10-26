@@ -12,7 +12,12 @@ import sys
 
 
 def cli_argv():
-    """Prefix for any command this runtime hands back, e.g. ['easy-to-3d']."""
+    """Prefix for any command this runtime hands back, e.g. ['easy-to-3d'].
+
+    A script path is made absolute: the returned array is meant to be copied into
+    a command run from some other working directory, and a bare `scripts/et3d.py`
+    only resolves from the one this call happened in.
+    """
     argv0 = (sys.argv[0] if sys.argv else '') or ''
     name = os.path.basename(argv0)
     if name in ('easy-to-3d', 'easy-to-3d.exe'):
@@ -20,5 +25,5 @@ def cli_argv():
     if name == '__main__.py' or name in ('', '-c', '-m'):
         return [sys.executable, '-m', 'easy_to_3d']
     if name.endswith('.py'):
-        return [sys.executable, argv0]
+        return [sys.executable, os.path.abspath(argv0)]
     return [argv0]

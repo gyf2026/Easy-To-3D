@@ -13,7 +13,7 @@ examples_en:
 - Make a 60×40 L-bracket with a 4 mm base plate and two 6 mm holes 10 mm from the edge, then export an STL
 - Raise the upright 8 mm over the last version, change four slots to three, and publish a new version I can compare side by side
 - Add a row of vents to the side of this enclosure, following the spots I marked on the model
-version: 0.1.0a7
+version: 0.1.0a8
 author: gyf2026
 ---
 
@@ -32,9 +32,12 @@ substitute the form that matches the host OS.
 | macOS, Linux | `python3 <skill>/scripts/et3d.py` |
 | Windows | `py -3 <skill>\scripts\et3d.py`, or `python` when `py` is absent |
 
-`<skill>` is the directory containing this `SKILL.md`, and `<skill>/scripts` holds the
-bundled runtime at `easy_to_3d`. There is no third-party dependency to install: the
-runtime is standard library only.
+`<skill>` is the directory containing this `SKILL.md`. The runtime lives in
+`<skill>/scripts/easy_to_3d.zip`; the launcher unpacks it once per build into the
+user's cache directory and reuses it, so the first command of a session may take a
+second longer than the rest. That cache is disposable — delete it and the next run
+recreates it. There is no third-party dependency to install: the runtime is standard
+library only.
 
 **Any CPython from 3.10 up runs it.** It has been run on Windows with 3.10 through
 3.15 and on macOS with 3.13, so a newer interpreter is never a reason to expect a

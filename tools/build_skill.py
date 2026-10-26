@@ -1,8 +1,9 @@
 """Assemble the self-contained structural-design skill, stamp it, and ship it.
 
 The skill published to a skill library must run without a separate install, so the
-runtime (core/easy_to_3d), the offline viewer and the JSON schemas are copied into
-the skill's scripts/ directory. Layout produced:
+runtime (core/easy_to_3d), the offline viewer and the JSON schemas travel with the
+skill. A skill library may cap how deeply a package may nest directories, so the
+runtime ships as one archive that the launcher unpacks on first use. Layout:
 
     <output>/structural-design/
     ├── SKILL.md
@@ -10,19 +11,23 @@ the skill's scripts/ directory. Layout produced:
     └── scripts/
         ├── et3d.py
         ├── BUILD.json
-        └── easy_to_3d/{*.py, web/, schemas/}
+        └── easy_to_3d.zip        <- the runtime, viewer and schemas
 
-The bundle is a derived artifact, never a second source of truth: every file in it
-is byte-identical to a file in this repository, and scripts/BUILD.json records the
-version, the git commit and a SHA-256 per source file. That record is what makes
-"is the published skill still in sync with the repository?" a mechanical question.
+Every shipped path is at most two levels below the skill root. verify() enforces
+that, so a later change cannot quietly reintroduce deep nesting.
+
+The bundle is a derived artifact, never a second source of truth: every byte in it
+comes from a file in this repository, and scripts/BUILD.json records the version,
+the git commit and a SHA-256 per source file, per shipped file and per archive
+member. That record is what makes "is the published skill still in sync with the
+repository?" a mechanical question.
 
 Modes:
   (default)  Build a fresh bundle plus the installable zip.
   --check    Compare an existing bundle against the current sources and report
              whether the skill library copy is stale, fresh or tampered with.
   --install  Copy the fresh bundle over a locally installed skill (previous copy
-             is kept as a timestamped backup).
+             is kept as a backup outside the skills directory).
 
 Nothing is read from dist/. A rebuild refuses to overwrite unless --force is given,
 so a stale bundle can never be mistaken for a fresh build.
@@ -35,6 +40,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -43,6 +49,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills' / 'structural-design'
 BUNDLE = 'structural-design'
 BUILD_FILE = 'BUILD.json'
+RUNTIME_DIR = 'scripts/easy_to_3d/'
+RUNTIME_ARCHIVE = 'scripts/easy_to_3d.zip'
+RUNTIME_PREFIX = 'easy_to_3d/'
+MAX_DEPTH = 2
+# A fixed timestamp makes the runtime archive reproducible: two builds of the same
+# sources produce the same bytes, so a changed hash always means changed code.
+ARCHIVE_EPOCH = (2020, 1, 1, 0, 0, 0)
 TEXT_SUFFIXES = {'.md', '.py', '.json', '.js', '.css', '.html'}
 VIEWER_SUFFIXES = {'.js', '.css', '.html'}
 TRACKED_FOR_DIRTY = ('core', 'viewer', 'schemas', 'skills', 'tools', 'pyproject.toml', '.github')
@@ -186,9 +199,18 @@ def source_provenance():
     }
 
 
-def bundle_record(mapping):
-    sources = {relative(path): sha256(path) for path in mapping}
-    bundled = {mapping[path]: sources[relative(path)] for path in mapping}
+def bundle_record(mapping, sources, bundle, archive_digest, member_count):
+    """The stamp. Three views of one build, each answering a different question.
+
+    sources         repository path -> digest: has the repository moved on?
+    bundle          path inside the skill -> digest: what content shipped?
+    files           path on disk inside the skill -> digest: was it altered after
+                    the build? The runtime archive appears here as one entry, and
+                    runtime_archive.members digs inside it when that entry disagrees.
+    """
+    files = {path: digest for path, digest in bundle.items()
+             if not path.startswith(RUNTIME_DIR)}
+    files[RUNTIME_ARCHIVE] = archive_digest
     fingerprint = hashlib.sha256(
         '\n'.join(f'{name} {sources[name]}' for name in sorted(sources)).encode()).hexdigest()
     total = sum(path.stat().st_size for path in mapping)
@@ -198,12 +220,51 @@ def bundle_record(mapping):
         'source': source_provenance(),
         'built_at': datetime.now(timezone(timedelta(hours=8))).isoformat(timespec='seconds'),
         'builder': 'tools/build_skill.py',
-        'counts': {'source_files': len(mapping), 'files': len(mapping) + 1,
-                   'uncompressed_bytes': total},
+        'layout': {'skill_md': 'SKILL.md', 'launcher': 'scripts/et3d.py',
+                   'runtime': RUNTIME_ARCHIVE, 'max_depth': MAX_DEPTH},
+        'counts': {'source_files': len(sources), 'runtime_members': member_count,
+                   'entries': len(files) + 1, 'uncompressed_bytes': total},
         'fingerprint': fingerprint,
         'sources': sources,
-        'bundle': bundled,
+        'bundle': bundle,
+        'files': files,
+        'runtime_archive': {'path': RUNTIME_ARCHIVE, 'sha256': archive_digest,
+                            'members': runtime_members(bundle)},
     }
+
+
+def runtime_members(bundle):
+    """Zip member name -> digest, keyed exactly as the archive stores them."""
+    return {RUNTIME_PREFIX + path[len(RUNTIME_DIR):]: digest
+            for path, digest in bundle.items() if path.startswith(RUNTIME_DIR)}
+
+
+def write_runtime_archive(path, mapping):
+    """One zip instead of a directory tree: keeps every shipped path shallow.
+
+    Timestamps are fixed so identical sources produce identical bytes; a changed
+    hash then always means changed code, never a changed checkout time.
+    """
+    members = {destination[len(RUNTIME_DIR):]: source
+               for source, destination in mapping.items()
+               if destination.startswith(RUNTIME_DIR)}
+    if not members:
+        raise ValueError('The runtime has no files to archive: ' + RUNTIME_DIR)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for name in sorted(members):
+            info = zipfile.ZipInfo(RUNTIME_PREFIX + name, date_time=ARCHIVE_EPOCH)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, members[name].read_bytes())
+    return len(members)
+
+
+def archive_members(path):
+    with zipfile.ZipFile(path) as archive:
+        return {info.filename: hashlib.sha256(archive.read(info.filename)).hexdigest()
+                for info in archive.infolist() if not info.is_dir()}
 
 
 def build(output, force=False):
@@ -219,14 +280,36 @@ def build(output, force=False):
             raise ValueError('Output already exists; pass --force to rebuild: ' + str(target))
         shutil.rmtree(target)
     mapping = table_map()
-    record = bundle_record(mapping)
+    sources = {relative(path): sha256(path) for path in mapping}
+    bundle = {mapping[path]: sources[relative(path)] for path in mapping}
     for source, destination in mapping.items():
+        if destination.startswith(RUNTIME_DIR):
+            continue
         path = target / destination
         path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, path)
+    member_count = write_runtime_archive(target / RUNTIME_ARCHIVE, mapping)
+    record = bundle_record(mapping, sources, bundle, sha256(target / RUNTIME_ARCHIVE), member_count)
     (target / 'scripts' / BUILD_FILE).write_text(
         json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     return target, record
+
+
+def depth_of(relative_path):
+    return relative_path.replace(os.sep, '/').count('/')
+
+
+def verify_depth(target):
+    """Every shipped path sits at most MAX_DEPTH levels below the skill root.
+
+    A skill library may cap nesting, and a package that nests deeper can be
+    rejected on upload. Checked here so a later addition cannot break it silently.
+    """
+    deep = sorted(str(path.relative_to(target)) for path in payload_files(target)
+                  if depth_of(str(path.relative_to(target))) > MAX_DEPTH)
+    if deep:
+        raise ValueError(f'Shipped paths must stay within {MAX_DEPTH} levels of the skill root; '
+                         + 'these are deeper: ' + repr(deep[:5]))
 
 
 def verify(target, record):
@@ -238,39 +321,48 @@ def verify(target, record):
         raise ValueError('SKILL.md does not tell the Agent how to start the bundled runtime')
     if BUILD_FILE not in skill_md:
         raise ValueError('SKILL.md does not tell the reader where the build record lives')
+    if not (target / RUNTIME_ARCHIVE).is_file():
+        raise ValueError('The bundled runtime archive is missing: ' + RUNTIME_ARCHIVE)
+    verify_depth(target)
     leaks = []
-    for path in files(target, TEXT_SUFFIXES):
-        text = path.read_text(encoding='utf-8', errors='replace')
+    checked = [(str(path.relative_to(target)), path.read_text(encoding='utf-8', errors='replace'))
+               for path in files(target, TEXT_SUFFIXES)]
+    with zipfile.ZipFile(target / RUNTIME_ARCHIVE) as archive:
+        for info in archive.infolist():
+            if Path(info.filename).suffix in TEXT_SUFFIXES and not info.is_dir():
+                checked.append((RUNTIME_ARCHIVE + '!' + info.filename,
+                                archive.read(info.filename).decode('utf-8', 'replace')))
+    for name, text in checked:
         for needle in (str(ROOT), '/Users/', 'C:\\Users\\'):
             if needle in text:
-                leaks.append((str(path.relative_to(target)), needle))
+                leaks.append((name, needle))
     if leaks:
         raise ValueError('Local absolute paths must not ship: ' + repr(leaks[:5]))
     shipped = {str(path.relative_to(target)): sha256(path) for path in bundle_files(target)}
-    stamped = record['bundle']
+    stamped = record['files']
     if shipped != stamped:
         missing = sorted(set(stamped) - set(shipped))
         extra = sorted(set(shipped) - set(stamped))
         differing = sorted(k for k in set(shipped) & set(stamped) if shipped[k] != stamped[k])
         raise ValueError('Bundle contents disagree with BUILD.json: '
                          + repr({'missing': missing[:5], 'extra': extra[:5], 'differing': differing[:5]}))
-    probe = ('import sys,json;from easy_to_3d.project import Project;'
-             'from easy_to_3d.server import WEB;'
-             'import easy_to_3d;'
-             'print(json.dumps({"web":WEB.is_dir(),'
-             '"glb":hasattr(__import__("easy_to_3d.glb",fromlist=["x"]),"write_glb"),'
-             '"version":easy_to_3d.__version__}))')
-    result = subprocess.run([sys.executable, '-c', probe], capture_output=True, text=True,
-                            cwd=target / 'scripts',
-                            env=dict(os.environ, PYTHONPATH=str(target / 'scripts'), PYTHONDONTWRITEBYTECODE='1'))
+    if archive_members(target / RUNTIME_ARCHIVE) != record['runtime_archive']['members']:
+        raise ValueError('The runtime archive does not match the members recorded in BUILD.json')
+    # Run the launcher the way a user would: unpack, import, find the viewer.
+    with tempfile.TemporaryDirectory(prefix='et3d-verify-') as cache:
+        result = subprocess.run([sys.executable, str(target / 'scripts' / 'et3d.py'), '--self-check'],
+                                capture_output=True, text=True, cwd=str(target),
+                                env=dict(os.environ, EASY_TO_3D_CACHE=cache,
+                                         PYTHONDONTWRITEBYTECODE='1'))
     if result.returncode != 0:
-        raise ValueError('Bundled runtime does not import: ' + result.stderr.strip()[:400])
+        raise ValueError('Bundled runtime does not start: '
+                         + (result.stderr.strip() or result.stdout.strip())[:400])
     state = json.loads(result.stdout)
-    if not state['web'] or not state['glb']:
-        raise ValueError('Bundled viewer or GLB writer is missing: ' + repr(state))
+    if not state['web_present']:
+        raise ValueError('Bundled viewer is missing after unpacking the runtime archive: ' + repr(state))
     if state['version'] != record['runtime']['version']:
         raise ValueError(f'Stamp says {record["runtime"]["version"]}, runtime reports {state["version"]}')
-    return len(bundle_files(target)) + 1, listing
+    return record['counts']['source_files'], listing
 
 
 def check(output):
@@ -287,20 +379,37 @@ def check(output):
     added = sorted(set(current) - set(recorded))
     removed = sorted(set(recorded) - set(current))
     changed = sorted(k for k in set(current) & set(recorded) if current[k] != recorded[k])
+    packed = 'files' in record and (target / RUNTIME_ARCHIVE).is_file()
     shipped = {str(path.relative_to(target)): sha256(path) for path in bundle_files(target)}
-    stamped = record.get('bundle', {})
+    # A pre-archive bundle listed the runtime file by file; a packed one lists the
+    # archive as a single entry. Compare against whichever this copy was built with.
+    stamped = record['files'] if packed else record.get('bundle', {})
     tampered = sorted(k for k in set(shipped) & set(stamped) if shipped[k] != stamped[k])
     unlisted = sorted(set(shipped) - set(stamped))
     absent = sorted(set(stamped) - set(shipped))
+    inside = {'readable': True, 'tampered': [], 'unlisted': [], 'absent': []}
+    if packed:
+        try:
+            members = archive_members(target / RUNTIME_ARCHIVE)
+        except (OSError, zipfile.BadZipFile):
+            inside['readable'] = False
+        else:
+            wanted = record['runtime_archive']['members']
+            inside['tampered'] = sorted(k for k in set(members) & set(wanted)
+                                        if members[k] != wanted[k])
+            inside['unlisted'] = sorted(set(members) - set(wanted))
+            inside['absent'] = sorted(set(wanted) - set(members))
     if added or removed or changed:
         state = 'stale'
-    elif tampered or unlisted or absent:
+    elif tampered or unlisted or absent or not inside['readable'] or any(
+            inside[key] for key in ('tampered', 'unlisted', 'absent')):
         state = 'tampered'
     else:
         state = 'fresh'
     result = {
         'state': state,
         'bundle': str(target),
+        'bundle_layout': 'archive' if packed else 'unpacked',
         'bundled_version': record.get('runtime', {}).get('version'),
         'bundled_commit': (record.get('source') or {}).get('commit'),
         'bundled_dirty': (record.get('source') or {}).get('dirty'),
@@ -309,6 +418,8 @@ def check(output):
         'source_drift': {'added': added, 'removed': removed, 'changed': changed},
         'bundle_integrity': {'tampered': tampered, 'unlisted': unlisted, 'absent': absent},
     }
+    if packed:
+        result['runtime_integrity'] = inside
     if state == 'fresh':
         result['detail'] = 'Bundle matches the working tree.'
     elif state == 'stale':
@@ -346,9 +457,11 @@ def zip_skill(target, output):
     archive = output.parent / (target.name + '.zip')
     if archive.exists():
         archive.unlink()
-    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:
+    with zipfile.ZipFile(archive, 'w') as bundle:
         for path in payload_files(target):
-            bundle.write(path, path.relative_to(target.parent))
+            # Storing an already-compressed archive beats deflating it twice.
+            method = zipfile.ZIP_STORED if path.suffix == '.zip' else zipfile.ZIP_DEFLATED
+            bundle.write(path, path.relative_to(target.parent), compress_type=method)
     verify_archive(archive, target)
     return archive
 
@@ -365,8 +478,15 @@ def verify_archive(archive, target):
     stamp = f'{target.name}/scripts/{BUILD_FILE}'
     if stamp not in names:
         raise ValueError('Archive must carry the build record at ' + stamp)
+    runtime = f'{target.name}/{RUNTIME_ARCHIVE}'
+    if runtime not in names:
+        raise ValueError('Archive must carry the bundled runtime at ' + runtime)
     if len(names) != len(expected):
         raise ValueError(f'Archive has {len(names)} entries, bundle has {len(expected)}')
+    deep = sorted(name for name in names if name.count('/') > MAX_DEPTH)
+    if deep:
+        raise ValueError(f'Archive entries must stay within {MAX_DEPTH} levels of the skill root; '
+                         + 'these are deeper: ' + repr(deep[:5]))
 
 
 def release_notes(record, archive, output, listing):
@@ -381,7 +501,9 @@ def release_notes(record, archive, output, listing):
     lines = [
         f"# {listing['display_name']} · {record['runtime']['version']}",
         '',
-        f"- 包体：`{archive.name}`（{archive.stat().st_size // 1024} KB，{record['counts']['files']} 个文件）",
+        f"- 包体：`{archive.name}`（{archive.stat().st_size // 1024} KB，"
+        f"{record['counts']['entries']} 个条目承载 {record['counts']['source_files']} 个文件；"
+        f"运行时压成 `scripts/easy_to_3d.zip`，包内路径最深 {record['layout']['max_depth']} 层）",
         f"- 源码：{source.get('repository') or 'local'} @ {origin}（{state}，分支 {source.get('branch')}）",
         f"- 构建：{record['built_at']}",
         f"- 指纹：`{record['fingerprint'][:16]}`",
@@ -446,7 +568,9 @@ def release_notes(record, archive, output, listing):
         '**4. 体积。** 解压后 '
         + f"{record['counts']['uncompressed_bytes'] / 1048576:.1f} MB"
         + '（Three.js 占大头），zip '
-        + f"{archive.stat().st_size / 1024:.0f} KB" + '。',
+        + f"{archive.stat().st_size / 1024:.0f} KB" + '。'
+        '包内只有一个运行时归档文件，首次运行自动解压到用户缓存目录，之后直接复用；'
+        '所有随包路径都在技能根目录下两层以内。',
         '',
         '## 上传前自检',
         '',
@@ -505,6 +629,9 @@ def main():
         'tag': record['source']['tag'],
         'dirty': record['source']['dirty'],
         'files': count,
+        'entries': record['counts']['entries'],
+        'runtime_members': record['counts']['runtime_members'],
+        'max_depth': record['layout']['max_depth'],
         'uncompressed_bytes': record['counts']['uncompressed_bytes'],
         'zip_bytes': archive.stat().st_size,
         'fingerprint': record['fingerprint'],
